@@ -11,6 +11,14 @@ interface BlogCardProps {
   href?: string;
 }
 
+function PlaceholderImage({ title }: { title: string }) {
+  return (
+    <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20">
+      <span className="font-display text-lg text-[#EEEEFF]/20">{title.charAt(0)}</span>
+    </div>
+  );
+}
+
 export function BlogCard({
   image,
   category,
@@ -29,11 +37,15 @@ export function BlogCard({
       className="group block overflow-hidden rounded-lg border border-[#2A2A38] bg-[#0F0F1A] transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-md hover:shadow-[#6C63FF]/10"
     >
       <div className="overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="aspect-video w-full object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
-        />
+        {image ? (
+          <img
+            src={image}
+            alt={title}
+            className="aspect-video w-full object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+          />
+        ) : (
+          <PlaceholderImage title={title} />
+        )}
       </div>
 
       <div className="flex flex-col gap-3 p-5">

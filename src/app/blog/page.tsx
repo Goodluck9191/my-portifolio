@@ -1,138 +1,56 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Search, ArrowRight } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { BlogCard } from "@/components/ui/BlogCard";
-
-const categories = ["All", "AI", "Architecture", "Backend", "Cloud"];
-
-const allArticles = [
-  {
-    image: "/images/placeholder.svg",
-    category: "AI",
-    title: "Building AI-Powered Features with LLM APIs",
-    excerpt: "A practical walkthrough on integrating GPT and other LLMs into your web application — from prompt engineering to cost optimization.",
-    date: "Mar 2026",
-    readTime: "7 min read",
-    slug: "ai-powered-features-llm",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Architecture",
-    title: "Scaling Web Apps with Microservices",
-    excerpt: "Breaking monoliths into manageable services, handling service discovery, and managing inter-service communication at scale.",
-    date: "Feb 2026",
-    readTime: "8 min read",
-    slug: "scaling-microservices",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Backend",
-    title: "Database Optimization at Scale",
-    excerpt: "Indexing strategies, query optimization, and connection pooling for handling millions of requests per day.",
-    date: "Jan 2026",
-    readTime: "6 min read",
-    slug: "database-optimization",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Cloud",
-    title: "CI/CD Pipelines for Solo Devs",
-    excerpt: "How to set up production-grade CI/CD pipelines even when you're a team of one. Automate testing, building, and deployment.",
-    date: "Dec 2025",
-    readTime: "5 min read",
-    slug: "cicd-solo-devs",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Architecture",
-    title: "API Gateway Patterns Compared",
-    excerpt: "A comparison of gateway strategies — reverse proxy, BFF, and GraphQL federation — and when to use each.",
-    date: "Nov 2025",
-    readTime: "7 min read",
-    slug: "api-gateway-patterns",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Backend",
-    title: "Message Queues vs Event Streams",
-    excerpt: "Understanding the difference between RabbitMQ-style queues and Kafka-style event streams for async architecture.",
-    date: "Oct 2025",
-    readTime: "6 min read",
-    slug: "queues-vs-streams",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Cloud",
-    title: "Securing Your Web Application",
-    excerpt: "Essential security practices — rate limiting, input validation, CORS policies, and authentication best practices.",
-    date: "Sep 2025",
-    readTime: "9 min read",
-    slug: "web-security-essentials",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "AI",
-    title: "Prompt Engineering for Developers",
-    excerpt: "How to write effective prompts that produce reliable, production-ready outputs from large language models.",
-    date: "Aug 2025",
-    readTime: "5 min read",
-    slug: "prompt-engineering-devs",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Backend",
-    title: "Building Resilient REST APIs",
-    excerpt: "Error handling, retry logic, rate limiting, and idempotency — patterns that make APIs robust in production.",
-    date: "Jul 2025",
-    readTime: "6 min read",
-    slug: "resilient-rest-apis",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Architecture",
-    title: "State Management in Modern Web Apps",
-    excerpt: "When to use Context, Zustand, Redux, or server state — a decision framework for frontend state management.",
-    date: "Jun 2025",
-    readTime: "7 min read",
-    slug: "state-management-modern-web",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "AI",
-    title: "Automating Workflows with Python",
-    excerpt: "Building automation scripts that save hours each week — file processing, data extraction, and API orchestration.",
-    date: "May 2025",
-    readTime: "4 min read",
-    slug: "automating-workflows-python",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Cloud",
-    title: "Zero-Downtime Deployments on a Budget",
-    excerpt: "How to achieve zero-downtime deployments using free-tier services and smart CI/CD orchestration.",
-    date: "Apr 2025",
-    readTime: "5 min read",
-    slug: "zero-downtime-deployments",
-  },
-];
+import type { Post } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 6;
 
 export default function BlogPage() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [featured, setFeatured] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subEmail, setSubEmail] = useState("");
 
-  const featured = allArticles[0];
-  const restArticles = allArticles.slice(1);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [postsRes, featuredRes] = await Promise.all([
+          fetch("/api/posts"),
+          fetch("/api/posts?featured=true&limit=1"),
+        ]);
+        const postsData = await postsRes.json();
+        const featuredData = await featuredRes.json();
+
+        const allPosts = postsData.data ?? [];
+        setPosts(allPosts.filter((p: Post) => !p.featured));
+        setFeatured(featuredData.data?.[0] ?? allPosts[0] ?? null);
+      } catch (err) {
+        console.error("Failed to fetch posts:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = new Set(posts.map((p) => p.category));
+    return ["All", ...Array.from(cats)];
+  }, [posts]);
 
   const filtered = useMemo(() => {
-    return restArticles.filter((article) => {
+    return posts.filter((article) => {
       const matchesCategory =
         activeCategory === "All" || article.category === activeCategory;
       const matchesSearch =
@@ -141,7 +59,7 @@ export default function BlogPage() {
         article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, posts]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice(0, page * ITEMS_PER_PAGE);
@@ -149,6 +67,16 @@ export default function BlogPage() {
   function handleCategory(cat: string) {
     setActiveCategory(cat);
     setPage(1);
+  }
+
+  if (loading) {
+    return (
+      <Section padding="sm">
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#6C63FF] border-t-transparent" />
+        </div>
+      </Section>
+    );
   }
 
   return (
@@ -171,35 +99,40 @@ export default function BlogPage() {
         </div>
       </Section>
 
-      <Section padding="sm">
-        <div className="flex flex-col overflow-hidden rounded-xl border border-[#2A2A38] bg-[#0F0F1A] md:flex-row">
-          <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20 md:w-1/2">
-            <span className="font-display text-4xl text-[#EEEEFF]/20 md:text-5xl">
-              Featured
-            </span>
+      {featured && (
+        <Section padding="sm">
+          <div className="flex flex-col overflow-hidden rounded-xl border border-[#2A2A38] bg-[#0F0F1A] md:flex-row">
+            <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20 md:w-1/2">
+              <span className="font-display text-4xl text-[#EEEEFF]/20 md:text-5xl">
+                Featured
+              </span>
+            </div>
+            <div className="flex flex-col gap-4 p-6 md:w-1/2 md:p-8">
+              <span className="w-fit rounded-full border border-[#6C63FF]/30 bg-[#6C63FF]/10 px-3 py-0.5 font-mono text-[11px] font-medium text-[#6C63FF]">
+                {featured.category}
+              </span>
+              <h2 className="font-display text-2xl font-bold text-white">
+                {featured.title}
+              </h2>
+              <p className="font-sans text-sm leading-relaxed text-[#7A7A9A]">
+                {featured.excerpt}
+              </p>
+              <p className="font-mono text-sm text-[#7A7A9A]">
+                {new Date(featured.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                })} &middot; {featured.read_time} min read
+              </p>
+              <Link
+                href={`/blog/${featured.slug}`}
+                className="flex items-center gap-1.5 font-sans text-sm font-medium text-[#6C63FF] transition-colors hover:text-[#00D4FF]"
+              >
+                Read Article <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-col gap-4 p-6 md:w-1/2 md:p-8">
-            <span className="w-fit rounded-full border border-[#6C63FF]/30 bg-[#6C63FF]/10 px-3 py-0.5 font-mono text-[11px] font-medium text-[#6C63FF]">
-              {featured.category}
-            </span>
-            <h2 className="font-display text-2xl font-bold text-white">
-              {featured.title}
-            </h2>
-            <p className="font-sans text-sm leading-relaxed text-[#7A7A9A]">
-              {featured.excerpt}
-            </p>
-            <p className="font-mono text-sm text-[#7A7A9A]">
-              {featured.date} &middot; {featured.readTime}
-            </p>
-            <Link
-              href={`/blog/${featured.slug}`}
-              className="flex items-center gap-1.5 font-sans text-sm font-medium text-[#6C63FF] transition-colors hover:text-[#00D4FF]"
-            >
-              Read Article <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
       <Section padding="sm">
         <div className="flex flex-col gap-6">
@@ -240,9 +173,18 @@ export default function BlogPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {paginated.map((article) => (
               <BlogCard
-                key={article.slug}
-                href={`/blog/${article.slug}`}
-                {...article}
+                key={article.id}
+                image={article.image_url ?? "/images/placeholder.svg"}
+                category={article.category}
+                title={article.title}
+                excerpt={article.excerpt}
+                date={new Date(article.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+                readTime={`${article.read_time} min read`}
+                slug={article.slug}
               />
             ))}
           </div>
@@ -293,20 +235,37 @@ export default function BlogPage() {
             </div>
           ) : (
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                setSubscribed(true);
+                setSubscribing(true);
+                try {
+                  const res = await fetch("/api/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: subEmail }),
+                  });
+                  const data = await res.json();
+                  if (res.ok || res.status === 409) {
+                    setSubscribed(true);
+                  }
+                } catch {
+                  console.error("Subscribe failed");
+                } finally {
+                  setSubscribing(false);
+                }
               }}
               className="flex w-full flex-col gap-3 sm:flex-row"
             >
               <input
                 type="email"
+                value={subEmail}
+                onChange={(e) => setSubEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
                 className="flex-1 rounded-lg border border-[#2A2A38] bg-[#16162A] px-4 py-3 font-sans text-sm text-[#EEEEFF] placeholder-[#7A7A9A] outline-none transition-all duration-200 focus:border-[#6C63FF] focus:shadow-[0_0_0_3px_rgba(108,99,255,0.2)]"
               />
-              <Button type="submit" size="md">
-                Subscribe
+              <Button type="submit" size="md" disabled={subscribing}>
+                {subscribing ? "Subscribing..." : "Subscribe"}
               </Button>
             </form>
           )}

@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { z } from "zod";
 
 const contactSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   projectType: z.string().optional(),
   budget: z.string().optional(),
@@ -18,12 +18,13 @@ interface ContactFormProps {
   onSubmit?: (data: FormData) => void | Promise<void>;
   loading?: boolean;
   success?: boolean;
+  error?: string;
 }
 
-const projectTypes = ["Business Website", "Web App", "Landing Page", "Other"];
-const budgets = ["<$500", "$500–$1500", "$1500+", "Let's discuss"];
+const projectTypes = ["Business Website", "Web App", "Landing Page", "E-Commerce", "Other"];
+const budgets = ["Under $500", "$500 - $1500", "$1500 - $5000", "$5000+", "Let's discuss"];
 
-export function ContactForm({ onSubmit, loading = false, success = false }: ContactFormProps) {
+export function ContactForm({ onSubmit, loading = false, success = false, error: submitErrorProp }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -181,8 +182,8 @@ export function ContactForm({ onSubmit, loading = false, success = false }: Cont
         )}
       </div>
 
-      {submitError && (
-        <p className="font-sans text-sm text-red-500">{submitError}</p>
+      {(submitError || submitErrorProp) && (
+        <p className="font-sans text-sm text-red-500">{submitError || submitErrorProp}</p>
       )}
 
       <button

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { Post } from "@/lib/types";
 
-const articles = [
+const fallbackArticles = [
   {
     category: "Architecture",
     title: "Building a RAG Pipeline with LangChain",
@@ -37,6 +38,7 @@ function BlogCard({
   date,
   readTime,
   href,
+  image,
 }: {
   category: string;
   title: string;
@@ -44,15 +46,26 @@ function BlogCard({
   date: string;
   readTime: string;
   href: string;
+  image?: string;
 }) {
   return (
     <Link
       href={href}
       className="group flex flex-col overflow-hidden rounded-lg border border-[#22223A] bg-[#0F0F1A] transition-all duration-300 ease-out hover:border-[#6C63FF] hover:shadow-md"
     >
-      <div className="flex aspect-video items-center justify-center bg-[#16162A]">
-        <span className="font-mono text-xs text-[#7A7A9A]">[Article Image]</span>
-      </div>
+      {image ? (
+        <div className="overflow-hidden">
+          <img
+            src={image}
+            alt={title}
+            className="aspect-video w-full object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+          />
+        </div>
+      ) : (
+        <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20">
+          <span className="font-display text-lg text-[#EEEEFF]/20">{title.charAt(0)}</span>
+        </div>
+      )}
       <div className="flex flex-col gap-1.5 p-4">
         <span className="font-mono text-[10px] font-medium uppercase text-[#6C63FF]">
           {category}
@@ -73,7 +86,22 @@ function BlogCard({
   );
 }
 
-export function BlogPreview() {
+export function BlogPreview({ posts }: { posts?: Post[] }) {
+  const items = posts?.length
+    ? posts.map((p) => ({
+        category: p.category,
+        title: p.title,
+        excerpt: p.excerpt,
+        date: new Date(p.created_at).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        readTime: String(p.read_time),
+        href: `/blog/${p.slug}`,
+        image: p.image_url || undefined,
+      }))
+    : fallbackArticles;
+
   return (
     <section className="border-b border-[#22223A] bg-[#08080E] py-16 md:py-20">
       <div className="mx-auto max-w-[1100px] px-4">
@@ -87,7 +115,7 @@ export function BlogPreview() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
+          {items.map((article) => (
             <BlogCard key={article.title} {...article} />
           ))}
         </div>

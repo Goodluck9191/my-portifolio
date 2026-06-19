@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { Project } from "@/lib/types";
 
-const projects = [
+const fallbackProjects = [
   {
     category: "Client Website",
     title: "Restaurant Ordering Platform",
@@ -33,21 +34,33 @@ function ProjectCard({
   description,
   techs,
   href,
+  image,
 }: {
   category: string;
   title: string;
   description: string;
   techs: string[];
   href: string;
+  image?: string;
 }) {
   return (
     <Link
       href={href}
       className="group flex flex-col gap-3 rounded-xl border border-[#22223A] bg-[#0F0F1A] p-5 transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-lg"
     >
-      <div className="flex aspect-video items-center justify-center rounded-lg bg-[#16162A]">
-        <span className="font-mono text-xs text-[#7A7A9A]">[Project Image]</span>
-      </div>
+      {image ? (
+        <div className="overflow-hidden rounded-lg">
+          <img
+            src={image}
+            alt={title}
+            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </div>
+      ) : (
+        <div className="flex aspect-video items-center justify-center rounded-lg bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20">
+          <span className="font-display text-lg text-[#EEEEFF]/20">{title.charAt(0)}</span>
+        </div>
+      )}
       <span className="font-mono text-[11px] font-medium uppercase text-[#6C63FF]">
         {category}
       </span>
@@ -74,7 +87,18 @@ function ProjectCard({
   );
 }
 
-export function FeaturedProjects() {
+export function FeaturedProjects({ projects }: { projects?: Project[] }) {
+  const items = projects?.length
+    ? projects.map((p) => ({
+        category: p.category,
+        title: p.title,
+        description: p.description,
+        techs: p.tech_stack,
+        href: `/projects/${p.slug}`,
+        image: p.image_url || undefined,
+      }))
+    : fallbackProjects;
+
   return (
     <section className="border-b border-[#22223A] bg-[#08080E] py-16 md:py-20">
       <div className="mx-auto max-w-[1100px] px-4">
@@ -88,7 +112,7 @@ export function FeaturedProjects() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {items.map((project) => (
             <ProjectCard key={project.title} {...project} />
           ))}
         </div>

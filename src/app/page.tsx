@@ -1,12 +1,11 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
 import { AboutPreview } from "@/components/sections/AboutPreview";
 import { FeaturedProjects } from "@/components/sections/FeaturedProjects";
 import { SystemDesignShowcase } from "@/components/sections/SystemDesignShowcase";
 import { BlogPreview } from "@/components/sections/BlogPreview";
 import { ContactCTA } from "@/components/sections/ContactCTA";
+import { getProjects, getPosts } from "@/lib/data";
 
 const techStack = [
   "React", "Next.js", "Node.js", "Express", "Python",
@@ -14,49 +13,17 @@ const techStack = [
   "Vercel", "Git", "REST APIs",
 ];
 
-function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const [hasAnimated, setHasAnimated] = useState(false);
+export default async function Home() {
+  const [projects, posts] = await Promise.allSettled([
+    getProjects(),
+    getPosts(),
+  ]);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || hasAnimated) return;
+  const featuredProjects =
+    projects.status === "fulfilled" ? projects.value.filter((p) => p.featured) : [];
+  const featuredPosts =
+    posts.status === "fulfilled" ? posts.value.filter((p) => p.published) : [];
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasAnimated) {
-          setHasAnimated(true);
-          const start = performance.now();
-          const duration = 1400;
-
-          function animate(now: number) {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.floor(eased * target));
-            if (progress < 1) requestAnimationFrame(animate);
-          }
-
-          requestAnimationFrame(animate);
-        }
-      },
-      { threshold: 0.5 },
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target, hasAnimated]);
-
-  return (
-    <span ref={ref}>
-      {count}
-      {suffix}
-    </span>
-  );
-}
-
-export default function Home() {
   return (
     <>
       <section className="mx-auto flex min-h-screen max-w-[1100px] flex-col justify-center px-4 pt-16">
@@ -127,9 +94,9 @@ export default function Home() {
       </section>
 
       <AboutPreview />
-      <FeaturedProjects />
+      <FeaturedProjects projects={featuredProjects} />
       <SystemDesignShowcase />
-      <BlogPreview />
+      <BlogPreview posts={featuredPosts} />
       <ContactCTA />
     </>
   );
