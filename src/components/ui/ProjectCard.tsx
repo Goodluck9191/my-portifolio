@@ -11,6 +11,14 @@ interface ProjectCardProps {
   demoUrl?: string;
 }
 
+function PlaceholderImage({ title }: { title: string }) {
+  return (
+    <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20">
+      <span className="font-display text-2xl text-[#EEEEFF]/20">{title.charAt(0)}</span>
+    </div>
+  );
+}
+
 export function ProjectCard({
   image,
   category,
@@ -24,11 +32,15 @@ export function ProjectCard({
   return (
     <div className="group rounded-xl border border-[#2A2A38] bg-[#0F0F1A] transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-lg hover:shadow-[#6C63FF]/10">
       <div className="overflow-hidden rounded-t-xl">
-        <img
-          src={image}
-          alt={title}
-          className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {image ? (
+          <img
+            src={image}
+            alt={title}
+            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <PlaceholderImage title={title} />
+        )}
       </div>
 
       <div className="flex flex-col gap-3 p-5">

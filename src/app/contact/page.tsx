@@ -63,12 +63,37 @@ const contactInfo = [
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleSubmit() {
+  async function handleSubmit(data: Record<string, string>) {
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    setSuccess(true);
+    try {
+      const body: Record<string, string> = {
+        name: data.name,
+        email: data.email,
+        message: data.message,
+      };
+      if (data.projectType) body.project_type = data.projectType;
+      if (data.budget) body.budget = data.budget;
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Failed to send");
+      }
+
+      setSuccess(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -105,6 +130,7 @@ export default function ContactPage() {
               onSubmit={handleSubmit}
               loading={loading}
               success={success}
+              error={error}
             />
           </div>
 

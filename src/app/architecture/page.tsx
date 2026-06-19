@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Layers,
@@ -17,6 +17,7 @@ import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { BlogCard } from "@/components/ui/BlogCard";
 import { MermaidDiagram } from "@/components/ui/MermaidDiagram";
+import type { Post } from "@/lib/types";
 
 const tabs = [
   {
@@ -111,63 +112,6 @@ const tabs = [
   },
 ];
 
-const articles = [
-  {
-    image: "/images/placeholder.svg",
-    category: "System Design",
-    title: "Scaling Web Apps with Microservices",
-    excerpt: "A practical guide to breaking monoliths into manageable services, handling service discovery, and managing inter-service communication.",
-    date: "Feb 2026",
-    readTime: "8 min read",
-    slug: "scaling-microservices",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Performance",
-    title: "Database Optimization at Scale",
-    excerpt: "Indexing strategies, query optimization, and connection pooling techniques for handling millions of requests per day.",
-    date: "Jan 2026",
-    readTime: "6 min read",
-    slug: "database-optimization",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "DevOps",
-    title: "CI/CD Pipelines for Solo Devs",
-    excerpt: "How to set up production-grade CI/CD pipelines even when you're a team of one. Automate testing, building, and deployment.",
-    date: "Dec 2025",
-    readTime: "5 min read",
-    slug: "cicd-solo-devs",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Architecture",
-    title: "API Gateway Patterns Compared",
-    excerpt: "A comparison of gateway strategies — reverse proxy, BFF, and GraphQL federation — and when to use each.",
-    date: "Nov 2025",
-    readTime: "7 min read",
-    slug: "api-gateway-patterns",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Backend",
-    title: "Message Queues vs Event Streams",
-    excerpt: "Understanding the difference between RabbitMQ-style queues and Kafka-style event streams for async architecture.",
-    date: "Oct 2025",
-    readTime: "6 min read",
-    slug: "queues-vs-streams",
-  },
-  {
-    image: "/images/placeholder.svg",
-    category: "Security",
-    title: "Securing Your Web Application",
-    excerpt: "Essential security practices — rate limiting, input validation, CORS policies, and authentication best practices.",
-    date: "Sep 2025",
-    readTime: "9 min read",
-    slug: "web-security-essentials",
-  },
-];
-
 const scalabilityCards = [
   {
     icon: Zap,
@@ -201,6 +145,24 @@ const scalabilityCards = [
 
 export default function ArchitecturePage() {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const [articles, setArticles] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchArticles() {
+      try {
+        const res = await fetch("/api/posts");
+        const data = await res.json();
+        setArticles((data.data ?? []).slice(0, 6));
+      } catch (err) {
+        console.error("Failed to fetch articles:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchArticles();
+  }, []);
 
   const currentTab = tabs.find((t) => t.id === activeTab)!;
 
@@ -353,9 +315,27 @@ export default function ArchitecturePage() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((article) => (
-              <BlogCard key={article.slug} href={`/blog/${article.slug}`} {...article} />
+              <BlogCard
+                key={article.id}
+                image={article.image_url ?? "/images/placeholder.svg"}
+                category={article.category}
+                title={article.title}
+                excerpt={article.excerpt}
+                date={new Date(article.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+                readTime={`${article.read_time} min read`}
+                slug={article.slug}
+              />
             ))}
           </div>
+          {!loading && articles.length === 0 && (
+            <p className="py-12 text-center font-sans text-base text-[#7A7A9A]">
+              No articles yet.
+            </p>
+          )}
           <Link
             href="/blog"
             className="flex items-center justify-center gap-1 font-sans text-sm text-[#6C63FF] transition-colors hover:text-[#00D4FF] md:hidden"
