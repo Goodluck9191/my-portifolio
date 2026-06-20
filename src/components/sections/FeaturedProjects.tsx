@@ -56,6 +56,7 @@ function ProjectCard({
             src={image}
             alt={title}
             fill
+            unoptimized
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />

@@ -29,6 +29,7 @@ export type Post = {
   content: string;
   category: string;
   image_url?: string;
+  meta_description?: string;
   read_time: number;
   published: boolean;
   featured: boolean;

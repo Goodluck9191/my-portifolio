@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Search, ArrowRight } from "lucide-react";
 import { Section } from "@/components/ui/Section";
@@ -35,7 +36,7 @@ export default function BlogPage() {
         const { data } = await res.json();
         const allPosts: Post[] = data ?? [];
         const featuredPost = allPosts.find((p) => p.featured) ?? allPosts[0] ?? null;
-        setPosts(allPosts.filter((p) => p !== featuredPost));
+        setPosts(allPosts);
         setFeatured(featuredPost);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -127,10 +128,28 @@ export default function BlogPage() {
       {featured && (
         <Section padding="sm">
           <div className="flex flex-col overflow-hidden rounded-xl border border-[#2A2A38] bg-[#0F0F1A] md:flex-row">
-            <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20 md:w-1/2">
-              <span className="font-display text-4xl text-[#EEEEFF]/20 md:text-5xl">
-                Featured
-              </span>
+            <div className="relative aspect-video md:w-1/2">
+              {featured.image_url ? (
+                <>
+                  <Image
+                    src={featured.image_url}
+                    alt={featured.title}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <span className="absolute left-3 top-3 z-10 rounded-full border border-[#6C63FF]/30 bg-[#6C63FF]/90 px-3 py-0.5 font-mono text-[11px] font-medium text-white shadow-lg">
+                    Featured
+                  </span>
+                </>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#6C63FF]/20 to-[#00D4FF]/20">
+                  <span className="font-display text-4xl text-[#EEEEFF]/20 md:text-5xl">
+                    Featured
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-4 p-6 md:w-1/2 md:p-8">
               <span className="w-fit rounded-full border border-[#6C63FF]/30 bg-[#6C63FF]/10 px-3 py-0.5 font-mono text-[11px] font-medium text-[#6C63FF]">

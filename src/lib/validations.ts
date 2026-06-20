@@ -51,6 +51,7 @@ export const postSchema = z.object({
   content: z.string().min(20),
   category: z.string().min(2),
   image_url: z.string().url().optional().or(z.literal("")),
+  meta_description: z.string().min(50).max(160).optional().or(z.literal("")),
   read_time: z.number().min(1).max(60),
   published: z.boolean().default(false),
   featured: z.boolean().default(false),

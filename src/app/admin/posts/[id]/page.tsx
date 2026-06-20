@@ -15,6 +15,7 @@ const emptyForm = {
   content: "",
   category: "",
   image_url: "",
+  meta_description: "",
   read_time: 5,
   published: false,
   featured: false,
@@ -55,6 +56,7 @@ export default function PostFormPage({
           content: data.content ?? "",
           category: data.category ?? "",
           image_url: data.image_url ?? "",
+          meta_description: data.meta_description ?? "",
           read_time: data.read_time ?? 5,
           published: data.published ?? false,
           featured: data.featured ?? false,
@@ -202,6 +204,46 @@ export default function PostFormPage({
             rows={2}
             required
           />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="font-sans text-xs text-[#7A7A9A]">
+            Meta Description
+            <span className="ml-1 font-mono text-[10px] text-[#7A7A9A]">
+              ({form.meta_description.length}/160
+              {form.meta_description.length > 160 && (
+                <span className="text-red-500"> - exceeds limit!</span>
+              )}
+              {form.meta_description.length > 0 && form.meta_description.length < 50 && (
+                <span className="text-yellow-500"> - minimum 50 chars</span>
+              )}
+            </span>
+          </label>
+          <textarea
+            name="meta_description"
+            value={form.meta_description}
+            onChange={handleChange}
+            className={`${inputClass} resize-none ${form.meta_description.length > 160 ? "border-red-500 focus:border-red-500" : ""}`}
+            rows={3}
+            maxLength={200}
+          />
+          <p className="font-sans text-[11px] text-[#7A7A9A]">
+            Meta description appears in Google search results and helps improve SEO.
+          </p>
+          {form.meta_description && (
+            <div className="mt-1 rounded-lg border border-[#2A2A38] bg-[#1A1A2E] p-3">
+              <p className="font-sans text-[11px] text-[#00D4FF]">Search result preview:</p>
+              <p className="mt-1 font-sans text-[13px] text-[#1558a8] line-clamp-2">
+                {form.title || "Post Title"}
+              </p>
+              <p className="font-sans text-[12px] text-[#006621] line-clamp-1">
+                https://yourdomain.com/blog/{form.slug || "post-slug"}
+              </p>
+              <p className="font-sans text-[13px] text-[#545454] line-clamp-2">
+                {form.meta_description.slice(0, 160)}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">

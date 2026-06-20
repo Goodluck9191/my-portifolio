@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,6 +6,39 @@ import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { getPostBySlug, getPosts } from "@/lib/data";
 
 export const revalidate = 3600;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
+  if (!post) return {};
+
+  const metaDescription =
+    post.meta_description ||
+    post.excerpt ||
+    post.content.replace(/<[^>]*>/g, "").slice(0, 160);
+
+  return {
+    title: post.title,
+    description: metaDescription,
+    openGraph: {
+      title: post.title,
+      description: metaDescription,
+      type: "article",
+      publishedTime: post.created_at,
+      images: post.image_url ? [{ url: post.image_url }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: metaDescription,
+      images: post.image_url ? [post.image_url] : [],
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const posts = await getPosts();
@@ -61,6 +95,7 @@ export default async function BlogPostPage({
               src={post.image_url}
               alt={post.title}
               fill
+              unoptimized
               className="object-cover"
               priority
               sizes="(max-width: 768px) 100vw, 768px"
