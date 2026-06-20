@@ -22,7 +22,7 @@ const techStack = [
 
 async function FeaturedProjectsWrapper() {
   const projects = await getProjects();
-  const featured = projects.filter((p) => p.featured);
+  const featured = projects.filter((p) => p.featured).slice(0, 3);
   return <FeaturedProjects projects={featured} />;
 }
 

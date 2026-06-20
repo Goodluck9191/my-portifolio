@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +10,7 @@ import { TechStackIcon } from "@/components/ui/TechStackIcon";
 import { useSettings } from "@/components/providers/SettingsProvider";
 import type { Project } from "@/lib/types";
 
-const categories = ["All", "Client Websites", "Web Apps", "Automation"];
+
 
 export default function ProjectsPage() {
   const pageTitle = useSettings("projects_page_title", "Selected Work");
@@ -39,6 +39,11 @@ export default function ProjectsPage() {
 
     fetchData();
   }, []);
+
+  const categories = useMemo(() => {
+    const cats = new Set(projects.map((p) => p.category));
+    return ["All", ...Array.from(cats)];
+  }, [projects]);
 
   const filtered =
     activeFilter === "All"

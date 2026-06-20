@@ -86,7 +86,7 @@ function ProjectCard({
           ))}
         </div>
       <span className="mt-1 font-sans text-[13px] font-semibold text-[#6C63FF] transition-colors group-hover:text-[#00D4FF]">
-        Case Study &rarr;
+        Case Study →
       </span>
     </Link>
   );
@@ -129,7 +129,7 @@ export function FeaturedProjects({ projects }: { projects?: Project[] }) {
           >
             View All Projects{" "}
             <span className="inline-block transition-transform duration-200 group-hover:translate-x-1.5">
-              &rarr;
+              →
             </span>
           </Link>
         </div>
