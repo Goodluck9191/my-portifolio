@@ -92,30 +92,34 @@ export async function POST(request: Request) {
       );
     }
 
-    if (resend && process.env.CONTACT_NOTIFICATION_EMAIL) {
-      try {
-        await resend.emails.send({
-          from: "Portfolio Contact <noreply@yourdomain.com>",
-          to: process.env.CONTACT_NOTIFICATION_EMAIL,
-          subject: `New Contact: ${result.data.name} - ${result.data.project_type ?? "General"}`,
-          html: `
-            <h2>New Contact Message</h2>
-            <p><strong>Name:</strong> ${result.data.name}</p>
-            <p><strong>Email:</strong> ${result.data.email}</p>
-            <p><strong>Project Type:</strong> ${result.data.project_type ?? "Not specified"}</p>
-            <p><strong>Budget:</strong> ${result.data.budget ?? "Not specified"}</p>
-            <hr/>
-            <p><strong>Message:</strong></p>
-            <p>${result.data.message.replace(/\n/g, "<br/>")}</p>
-          `,
-        });
-      } catch (emailErr) {
-        console.error("Failed to send notification email:", emailErr);
+    if (resend && process.env.RESEND_FROM_EMAIL) {
+      // Send notification to site owner
+      if (process.env.CONTACT_NOTIFICATION_EMAIL) {
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: process.env.CONTACT_NOTIFICATION_EMAIL,
+            subject: `New Contact: ${result.data.name} - ${result.data.project_type ?? "General"}`,
+            html: `
+              <h2>New Contact Message</h2>
+              <p><strong>Name:</strong> ${result.data.name}</p>
+              <p><strong>Email:</strong> ${result.data.email}</p>
+              <p><strong>Project Type:</strong> ${result.data.project_type ?? "Not specified"}</p>
+              <p><strong>Budget:</strong> ${result.data.budget ?? "Not specified"}</p>
+              <hr/>
+              <p><strong>Message:</strong></p>
+              <p>${result.data.message.replace(/\n/g, "<br/>")}</p>
+            `,
+          });
+        } catch (emailErr) {
+          console.error("Failed to send notification email:", emailErr);
+        }
       }
 
+      // Send auto-reply to contact
       try {
         await resend.emails.send({
-          from: "Goodluck Johnson <noreply@yourdomain.com>",
+          from: process.env.RESEND_FROM_EMAIL,
           to: result.data.email,
           subject: "Thank you for reaching out!",
           html: `

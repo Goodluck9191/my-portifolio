@@ -50,10 +50,11 @@ export async function POST(request: Request) {
       );
     }
 
-    if (resend && process.env.CONTACT_NOTIFICATION_EMAIL) {
+    if (resend && process.env.RESEND_FROM_EMAIL) {
+      // Send welcome email to subscriber
       try {
         await resend.emails.send({
-          from: "Goodluck Johnson <noreply@yourdomain.com>",
+          from: process.env.RESEND_FROM_EMAIL,
           to: email,
           subject: "Thanks for subscribing!",
           html: `
@@ -65,6 +66,25 @@ export async function POST(request: Request) {
         });
       } catch (emailErr) {
         console.error("Failed to send welcome email:", emailErr);
+      }
+
+      // Send notification to site owner
+      if (process.env.CONTACT_NOTIFICATION_EMAIL) {
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL,
+            to: process.env.CONTACT_NOTIFICATION_EMAIL,
+            subject: "New newsletter subscriber!",
+            html: `
+              <h2>New Subscriber</h2>
+              <p><strong>Email:</strong> ${email}</p>
+              <hr/>
+              <p>Someone just subscribed to your newsletter.</p>
+            `,
+          });
+        } catch (notifErr) {
+          console.error("Failed to send subscriber notification:", notifErr);
+        }
       }
     }
 

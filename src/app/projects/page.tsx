@@ -184,7 +184,7 @@ export default function ProjectsPage() {
                       rel="noopener noreferrer"
                       className="font-sans text-sm text-[#7A7A9A] transition-colors hover:text-[#EEEEFF]"
                     >
-                      Live Demo &nearr;
+                      Live Demo ↗
                     </a>
                   )}
                 </div>
