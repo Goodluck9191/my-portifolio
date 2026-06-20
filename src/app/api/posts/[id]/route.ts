@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { postSchema } from "@/lib/validations";
@@ -78,6 +79,8 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
+    revalidatePath("/blog", "page");
     return NextResponse.json({ data });
   } catch (err) {
     console.error("PATCH /api/posts/[id] error:", err);
@@ -115,6 +118,8 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
+    revalidatePath("/blog", "page");
     return NextResponse.json({ message: "Post deleted" });
   } catch (err) {
     console.error("DELETE /api/posts/[id] error:", err);

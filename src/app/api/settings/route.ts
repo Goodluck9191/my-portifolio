@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { verifyAdmin } from "@/lib/auth";
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ data });
   } catch (err) {
     console.error("POST /api/settings error:", err);
@@ -91,6 +93,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
     return NextResponse.json({ message: "Setting deleted" });
   } catch (err) {
     console.error("DELETE /api/settings error:", err);

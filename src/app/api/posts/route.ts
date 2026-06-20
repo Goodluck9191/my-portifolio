@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { postSchema } from "@/lib/validations";
@@ -92,6 +93,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
+    revalidatePath("/blog", "page");
     return NextResponse.json({ data }, { status: 201 });
   } catch (err) {
     console.error("POST /api/posts error:", err);

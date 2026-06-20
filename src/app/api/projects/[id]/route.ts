@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 import { projectSchema } from "@/lib/validations";
@@ -78,6 +79,8 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
+    revalidatePath("/projects", "page");
     return NextResponse.json({ data });
   } catch (err) {
     console.error("PATCH /api/projects/[id] error:", err);
@@ -115,6 +118,8 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/", "layout");
+    revalidatePath("/projects", "page");
     return NextResponse.json({ message: "Project deleted" });
   } catch (err) {
     console.error("DELETE /api/projects/[id] error:", err);
