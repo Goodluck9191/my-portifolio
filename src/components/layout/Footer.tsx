@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useSettings } from "@/components/providers/SettingsProvider";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -41,14 +44,19 @@ function MailIcon() {
   );
 }
 
-const socialLinks = [
-  { href: "https://github.com", label: "GitHub", icon: GithubIcon },
-  { href: "https://linkedin.com", label: "LinkedIn", icon: LinkedinIcon },
-  { href: "https://twitter.com", label: "Twitter / X", icon: TwitterIcon },
-  { href: "mailto:hello@goodluckprosper.dev", label: "Email", icon: MailIcon },
-];
-
 export function Footer() {
+  const brandLogo = useSettings("brand_logo_text", "GP");
+  const copyrightName = useSettings("copyright_name", "Goodluck Prosper");
+  const githubUrl = useSettings("social_github", "https://github.com/Goodluck9191");
+  const linkedinUrl = useSettings("social_linkedin", "https://linkedin.com");
+  const contactEmail = useSettings("contact_email", "goodluckprosper76@gmail.com");
+
+  const socialLinks = [
+    { href: githubUrl, label: "GitHub", icon: GithubIcon },
+    { href: linkedinUrl, label: "LinkedIn", icon: LinkedinIcon },
+    { href: `mailto:${contactEmail}`, label: "Email", icon: MailIcon },
+  ];
+
   return (
     <footer className="border-t border-[#2A2A38] bg-[#0A0A0F]">
       <div className="mx-auto flex max-w-[1100px] flex-col gap-10 px-6 py-12 md:flex-row md:items-start md:justify-between">
@@ -59,12 +67,12 @@ export function Footer() {
             style={{ fontFamily: "var(--font-mono)" }}
           >
             <span className="bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] bg-clip-text text-transparent">
-              GP
+              {brandLogo}
             </span>
             <span className="text-[#7A7A9A]">.dev</span>
           </Link>
           <p className="font-mono text-xs leading-relaxed text-[#7A7A9A]">
-            &copy; {new Date().getFullYear()} Goodluck Prosper.
+            &copy; {new Date().getFullYear()} {copyrightName}.
             <br />
             All rights reserved.
           </p>

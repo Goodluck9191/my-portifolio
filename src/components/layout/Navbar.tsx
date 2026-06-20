@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useSettings } from "@/components/providers/SettingsProvider";
 
 const navLinks = [
-  { href: "/#about", label: "About" },
+  { href: "/about", label: "About" },
   { href: "/projects", label: "Projects" },
+  { href: "/architecture", label: "Architecture" },
   { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ];
@@ -13,9 +15,19 @@ const navLinks = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const ticking = useRef(false);
+  const brandLogo = useSettings("brand_logo_text", "GP");
+  const contactEmail = useSettings("contact_email", "hello@goodluckprosper.dev");
+  const ctaLabel = useSettings("nav_cta_label", "Hire Me");
 
   const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 40);
+    if (!ticking.current) {
+      requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 40);
+        ticking.current = false;
+      });
+      ticking.current = true;
+    }
   }, []);
 
   useEffect(() => {
@@ -41,7 +53,7 @@ export function Navbar() {
           style={{ fontFamily: "var(--font-mono)" }}
         >
           <span className="bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] bg-clip-text text-transparent">
-            GP
+            {brandLogo}
           </span>
           <span className="text-[#7A7A9A]">.dev</span>
         </Link>
@@ -57,10 +69,10 @@ export function Navbar() {
             </Link>
           ))}
           <a
-            href="/#contact"
+            href={`mailto:${contactEmail}`}
             className="rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] px-[18px] py-2 text-[13px] font-semibold text-white transition-all duration-200 hover:scale-[1.03] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,14,0.92)]"
           >
-            Hire Me
+            {ctaLabel}
           </a>
         </div>
 
@@ -103,11 +115,11 @@ export function Navbar() {
           ))}
           <div className="px-4 py-4">
             <a
-              href="/#contact"
+              href={`mailto:${contactEmail}`}
               onClick={closeMobile}
               className="block w-full rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] px-[18px] py-3 text-center text-[13px] font-semibold text-white transition-all duration-200 hover:scale-[1.03] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6C63FF]"
             >
-              Hire Me
+              {ctaLabel}
             </a>
           </div>
         </div>

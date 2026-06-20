@@ -19,7 +19,9 @@ export async function GET() {
       settings[row.key] = row.value;
     }
 
-    return NextResponse.json({ data: settings });
+    return NextResponse.json({ data: settings }, {
+      headers: { "Cache-Control": "public, max-age=3600, s-maxage=3600" },
+    });
   } catch (err) {
     console.error("GET /api/settings error:", err);
     return NextResponse.json(
@@ -61,6 +63,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ data });
   } catch (err) {
     console.error("POST /api/settings error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const isAdmin = await verifyAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { key } = await request.json();
+    if (!key) {
+      return NextResponse.json({ error: "Key is required" }, { status: 400 });
+    }
+
+    const { error } = await db()
+      .from("settings")
+      .delete()
+      .eq("key", key);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: "Setting deleted" });
+  } catch (err) {
+    console.error("DELETE /api/settings error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

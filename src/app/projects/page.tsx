@@ -5,11 +5,17 @@ import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { ProjectCard } from "@/components/ui/ProjectCard";
+import { SkeletonCard, SkeletonFeatured } from "@/components/ui/SkeletonCard";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import type { Project } from "@/lib/types";
 
 const categories = ["All", "Client Websites", "Web Apps", "Automation"];
 
 export default function ProjectsPage() {
+  const pageTitle = useSettings("projects_page_title", "Selected Work");
+  const pageSubtitle = useSettings("projects_page_subtitle", "A selection of recent projects I've built for clients.");
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [featured, setFeatured] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,16 +24,12 @@ export default function ProjectsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [projectsRes, featuredRes] = await Promise.all([
-          fetch("/api/projects"),
-          fetch("/api/projects?featured=true"),
-        ]);
-        const projectsData = await projectsRes.json();
-        const featuredData = await featuredRes.json();
-        setProjects(projectsData.data ?? []);
-        if (featuredData.data?.length) {
-          setFeatured(featuredData.data[0]);
-        }
+        const res = await fetch("/api/projects");
+        const { data } = await res.json();
+        const allProjects: Project[] = data ?? [];
+        const featuredProject = allProjects.find((p) => p.featured) ?? null;
+        setProjects(allProjects);
+        setFeatured(featuredProject);
       } catch (err) {
         console.error("Failed to fetch projects:", err);
       } finally {
@@ -45,11 +47,33 @@ export default function ProjectsPage() {
 
   if (loading) {
     return (
-      <Section padding="sm">
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#6C63FF] border-t-transparent" />
-        </div>
-      </Section>
+      <>
+        <Section padding="sm">
+          <div className="flex flex-col gap-2 pt-4">
+            <nav className="flex items-center gap-2 font-mono text-xs text-[#7A7A9A]">
+              <span>Home</span>
+              <span>&gt;</span>
+              <span className="text-[#EEEEFF]">Projects</span>
+            </nav>
+            <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
+              Projects
+            </h1>
+            <p className="font-sans text-base text-[#7A7A9A]">
+              Real-world applications and architectural work.
+            </p>
+          </div>
+        </Section>
+        <Section padding="sm">
+          <SkeletonFeatured />
+        </Section>
+        <Section padding="sm">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} variant="project" />
+            ))}
+          </div>
+        </Section>
+      </>
     );
   }
 
@@ -65,10 +89,10 @@ export default function ProjectsPage() {
             <span className="text-[#EEEEFF]">Projects</span>
           </nav>
           <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
-            Selected Work
+            {pageTitle}
           </h1>
           <p className="font-sans text-base text-[#7A7A9A]">
-            A selection of recent projects I&apos;ve built for clients.
+            {pageSubtitle}
           </p>
         </div>
       </Section>
@@ -142,8 +166,9 @@ export default function ProjectsPage() {
                   {featured.tech_stack.map((tech) => (
                     <span
                       key={tech}
-                      className="rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A]"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A] transition-all duration-200 hover:border-[#6C63FF]"
                     >
+                      <TechStackIcon name={tech} size={12} />
                       {tech}
                     </span>
                   ))}
@@ -177,18 +202,6 @@ export default function ProjectsPage() {
           <p className="font-sans text-base text-[#7A7A9A]">
             I&apos;m happy to walk you through the details, share more screenshots, or discuss a similar project for you.
           </p>
-          <div className="mt-2">
-            <Link href="/resume.pdf" target="_blank">
-              <Button variant="secondary" size="md">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" x2="12" y1="15" y2="3" />
-                </svg>
-                View Full Resum&eacute;
-              </Button>
-            </Link>
-          </div>
         </div>
       </Section>
     </>

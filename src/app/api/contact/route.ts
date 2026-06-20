@@ -37,7 +37,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: { "Cache-Control": "private, no-cache" },
+    });
   } catch (err) {
     console.error("GET /api/contact error:", err);
     return NextResponse.json(
@@ -141,5 +143,45 @@ export async function POST(request: Request) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, status } = await request.json();
+    if (!id || !status) {
+      return NextResponse.json({ error: "Missing id or status" }, { status: 400 });
+    }
+    const { error } = await getSupabaseAdmin()
+      .from("contacts")
+      .update({ status })
+      .eq("id", id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ message: "Status updated" });
+  } catch (err) {
+    console.error("PATCH /api/contact error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { id } = await request.json();
+    if (!id) {
+      return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    }
+    const { error } = await getSupabaseAdmin()
+      .from("contacts")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ message: "Message deleted" });
+  } catch (err) {
+    console.error("DELETE /api/contact error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

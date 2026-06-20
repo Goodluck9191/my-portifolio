@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mail, MapPin, Clock } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { ContactForm } from "@/components/ui/ContactForm";
+import { useSettings } from "@/components/providers/SettingsProvider";
 
 function GithubIcon({ size }: { size?: number }) {
   const s = size ?? 20;
@@ -33,34 +34,29 @@ function LinkedinIcon({ size }: { size?: number }) {
   );
 }
 
-const contactInfo = [
-  {
-    icon: Mail,
-    label: "Email",
-    value: "hello@goodluckprosper.dev",
-    href: "mailto:hello@goodluckprosper.dev",
-  },
-  {
-    icon: GithubIcon,
-    label: "GitHub",
-    value: "github.com/goodluckprosper",
-    href: "https://github.com/goodluckprosper",
-  },
-  {
-    icon: LinkedinIcon,
-    label: "LinkedIn",
-    value: "linkedin.com/in/goodluckprosper",
-    href: "https://linkedin.com/in/goodluckprosper",
-  },
-  {
-    icon: TwitterIcon,
-    label: "Twitter / X",
-    value: "@goodluckprosper",
-    href: "https://twitter.com/goodluckprosper",
-  },
-];
+function useContactInfo() {
+  const emailVal = useSettings("contact_email", "hello@goodluckprosper.dev");
+  const githubVal = useSettings("social_github", "https://github.com/goodluckprosper");
+  const linkedinVal = useSettings("social_linkedin", "https://linkedin.com/in/goodluckprosper");
+  const twitterVal = useSettings("social_twitter", "https://twitter.com/goodluckprosper");
+
+  return [
+    { icon: Mail, label: "Email", value: emailVal, href: `mailto:${emailVal}` },
+    { icon: GithubIcon, label: "GitHub", value: githubVal, href: githubVal },
+    { icon: LinkedinIcon, label: "LinkedIn", value: linkedinVal, href: linkedinVal },
+    { icon: TwitterIcon, label: "Twitter / X", value: twitterVal, href: twitterVal },
+  ];
+}
 
 export default function ContactPage() {
+  const contactInfo = useContactInfo();
+  const pageTitle = useSettings("contact_page_title", "Let's Work Together");
+  const pageSubtitle = useSettings("contact_subtitle", "I'd love to hear about your project. Send me a message and I'll get back to you within 24 hours.");
+  const availabilityText = useSettings("availability_text", "Available for work");
+  const location = useSettings("contact_location", "Tanzania, East Africa");
+  const timezone = useSettings("contact_timezone", "EAT (UTC+3)");
+  const responseTime = useSettings("contact_response_time", "I typically respond within 24 hours.");
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -110,15 +106,14 @@ export default function ContactPage() {
 
           <div className="mb-1 inline-flex w-fit items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-4 py-1.5 text-sm text-green-500">
             <span className="h-2 w-2 rounded-full bg-green-500" />
-            Available for work
+            {availabilityText}
           </div>
 
           <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
-            Let&apos;s Work Together
+            {pageTitle}
           </h1>
           <p className="font-sans text-base text-[#7A7A9A]">
-            I&apos;d love to hear about your project. Send me a message and
-            I&apos;ll get back to you within 24 hours.
+            {pageSubtitle}
           </p>
         </div>
       </Section>
@@ -170,10 +165,10 @@ export default function ContactPage() {
                 <MapPin size={16} className="mt-0.5 shrink-0 text-[#7A7A9A]" />
                 <div className="flex flex-col">
                   <span className="font-sans text-sm text-[#EEEEFF]">
-                    Tanzania, East Africa
+                    {location}
                   </span>
                   <span className="font-sans text-xs text-[#7A7A9A]">
-                    EAT (UTC+3)
+                    {timezone}
                   </span>
                 </div>
               </div>
@@ -181,7 +176,7 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <Clock size={16} className="mt-0.5 shrink-0 text-[#7A7A9A]" />
                 <span className="font-sans text-sm text-[#7A7A9A]">
-                  I typically respond within 24 hours.
+                  {responseTime}
                 </span>
               </div>
             </div>

@@ -6,11 +6,18 @@ import { Search, ArrowRight } from "lucide-react";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { BlogCard } from "@/components/ui/BlogCard";
+import { SkeletonCard, SkeletonFeatured } from "@/components/ui/SkeletonCard";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import type { Post } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 6;
 
 export default function BlogPage() {
+  const pageTitle = useSettings("blog_page_title", "From the Blog");
+  const pageSubtitle = useSettings("blog_page_subtitle", "Thoughts on web development, system design, and AI.");
+  const newsletterHeading = useSettings("newsletter_heading", "Stay in the Loop");
+  const newsletterSubtitle = useSettings("newsletter_subtitle", "Get notified when I publish new articles on web development, system design, and AI.");
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [featured, setFeatured] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,16 +31,12 @@ export default function BlogPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [postsRes, featuredRes] = await Promise.all([
-          fetch("/api/posts"),
-          fetch("/api/posts?featured=true&limit=1"),
-        ]);
-        const postsData = await postsRes.json();
-        const featuredData = await featuredRes.json();
-
-        const allPosts = postsData.data ?? [];
-        setPosts(allPosts.filter((p: Post) => !p.featured));
-        setFeatured(featuredData.data?.[0] ?? allPosts[0] ?? null);
+        const res = await fetch("/api/posts");
+        const { data } = await res.json();
+        const allPosts: Post[] = data ?? [];
+        const featuredPost = allPosts.find((p) => p.featured) ?? allPosts[0] ?? null;
+        setPosts(allPosts.filter((p) => p !== featuredPost));
+        setFeatured(featuredPost);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
       } finally {
@@ -71,11 +74,33 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <Section padding="sm">
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#6C63FF] border-t-transparent" />
-        </div>
-      </Section>
+      <>
+        <Section padding="sm">
+          <div className="flex flex-col gap-2 pt-4">
+            <nav className="flex items-center gap-2 font-mono text-xs text-[#7A7A9A]">
+              <span>Home</span>
+              <span>&gt;</span>
+              <span className="text-[#EEEEFF]">Blog</span>
+            </nav>
+            <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
+              From the Blog
+            </h1>
+            <p className="font-sans text-base text-[#7A7A9A]">
+              Thoughts on web development, system design, and AI.
+            </p>
+          </div>
+        </Section>
+        <Section padding="sm">
+          <SkeletonFeatured />
+        </Section>
+        <Section padding="sm">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCard key={i} variant="blog" />
+            ))}
+          </div>
+        </Section>
+      </>
     );
   }
 
@@ -91,10 +116,10 @@ export default function BlogPage() {
             <span className="text-[#EEEEFF]">Blog</span>
           </nav>
           <h1 className="font-display text-4xl font-bold text-white md:text-5xl">
-            From the Blog
+            {pageTitle}
           </h1>
           <p className="font-sans text-base text-[#7A7A9A]">
-            Thoughts on web development, system design, and AI.
+            {pageSubtitle}
           </p>
         </div>
       </Section>
@@ -217,10 +242,10 @@ export default function BlogPage() {
       <Section id="newsletter" darkBg>
         <div className="mx-auto flex max-w-lg flex-col items-center gap-4 text-center">
           <h2 className="font-display text-2xl font-bold text-white md:text-3xl">
-            Stay in the Loop
+            {newsletterHeading}
           </h2>
           <p className="font-sans text-base text-[#7A7A9A]">
-            Get notified when I publish new articles on web development, system design, and AI.
+            {newsletterSubtitle}
           </p>
           {subscribed ? (
             <div className="flex items-center gap-3 rounded-lg border border-green-500/20 bg-green-500/10 px-6 py-4">

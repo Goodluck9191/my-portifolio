@@ -1,7 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Clock } from "lucide-react";
-import { getPostBySlug } from "@/lib/data";
+import { getPostBySlug, getPosts } from "@/lib/data";
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
 
 export default async function BlogPostPage({
   params,
@@ -48,11 +56,14 @@ export default async function BlogPostPage({
         </div>
 
         {post.image_url && (
-          <div className="mb-10 overflow-hidden rounded-xl border border-[#2A2A38]">
-            <img
+          <div className="relative mb-10 aspect-video overflow-hidden rounded-xl border border-[#2A2A38]">
+            <Image
               src={post.image_url}
               alt={post.title}
-              className="aspect-video w-full object-cover"
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           </div>
         )}

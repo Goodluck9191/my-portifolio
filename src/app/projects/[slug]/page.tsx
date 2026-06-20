@@ -1,7 +1,16 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { getProjectBySlug } from "@/lib/data";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
+import { getProjectBySlug, getProjects } from "@/lib/data";
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ slug: project.slug }));
+}
 export default async function ProjectPage({
   params,
 }: {
@@ -33,11 +42,14 @@ export default async function ProjectPage({
         </div>
 
         {project.image_url && (
-          <div className="mb-10 overflow-hidden rounded-xl border border-[#2A2A38]">
-            <img
+          <div className="relative mb-10 aspect-video overflow-hidden rounded-xl border border-[#2A2A38]">
+            <Image
               src={project.image_url}
               alt={project.title}
-              className="aspect-video w-full object-cover"
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 768px"
             />
           </div>
         )}
@@ -158,8 +170,9 @@ export default async function ProjectPage({
             {project.tech_stack.map((tech) => (
               <span
                 key={tech}
-                className="rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-3 py-1.5 font-mono text-xs text-[#7A7A9A]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-3 py-1.5 font-mono text-xs text-[#7A7A9A] transition-all duration-200 hover:border-[#6C63FF]"
               >
+                <TechStackIcon name={tech} size={14} />
                 {tech}
               </span>
             ))}

@@ -77,3 +77,65 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const { data, error } = await db()
+      .storage
+      .from("images")
+      .list("uploads", { limit: 100, sortBy: { column: "created_at", order: "desc" } });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    const files = (data ?? []).map((file) => {
+      const { data: urlData } = db().storage.from("images").getPublicUrl(`uploads/${file.name}`);
+      return {
+        name: file.name,
+        url: urlData.publicUrl,
+        created_at: file.created_at,
+        size: file.metadata?.size ?? 0,
+      };
+    });
+
+    return NextResponse.json({ data: files });
+  } catch (err) {
+    console.error("GET /api/upload error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const isAdmin = await verifyAdmin(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { path } = await request.json();
+    if (!path) {
+      return NextResponse.json({ error: "Path is required" }, { status: 400 });
+    }
+
+    const { error } = await db()
+      .storage
+      .from("images")
+      .remove([path]);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: "File deleted" });
+  } catch (err) {
+    console.error("DELETE /api/upload error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

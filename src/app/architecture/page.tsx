@@ -17,6 +17,7 @@ import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { BlogCard } from "@/components/ui/BlogCard";
 import { MermaidDiagram } from "@/components/ui/MermaidDiagram";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import type { Post } from "@/lib/types";
 
 const tabs = [
@@ -144,6 +145,12 @@ const scalabilityCards = [
 ];
 
 export default function ArchitecturePage() {
+  const archHeading = useSettings("architecture_heading", "How I Build");
+  const archHeadingAccent = useSettings("architecture_heading_accent", "Scalable Systems");
+  const archSubtitle = useSettings("architecture_subtitle", "Architecture patterns, design decisions, and systems thinking — the engineering principles behind every project I deliver.");
+  const archQuote = useSettings("architecture_quote", "Good architecture isn't about building for scale you'll never reach — it's about building so you can scale when the time comes.");
+  const archQuoteAuthor = useSettings("author_name", "Goodluck Prosper");
+
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   const [articles, setArticles] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,15 +178,14 @@ export default function ArchitecturePage() {
       <Section darkBg padding="lg">
         <div className="flex flex-col items-center gap-4 pt-8 text-center">
           <h1 className="font-display text-4xl font-bold text-white md:text-5xl lg:text-6xl">
-            How I Build
+            {archHeading}
             <br />
             <span className="bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] bg-clip-text text-transparent">
-              Scalable Systems
+              {archHeadingAccent}
             </span>
           </h1>
           <p className="max-w-2xl font-sans text-base text-[#7A7A9A] md:text-lg">
-            Architecture patterns, design decisions, and systems thinking —
-            the engineering principles behind every project I deliver.
+            {archSubtitle}
           </p>
         </div>
       </Section>
@@ -189,12 +195,10 @@ export default function ArchitecturePage() {
           <div className="md:w-2/5">
             <blockquote className="border-l-4 border-[#6C63FF] pl-6">
               <p className="font-display text-2xl leading-snug text-white md:text-3xl">
-                &ldquo;Good architecture isn&apos;t about building for scale
-                you&apos;ll never reach &mdash; it&apos;s about building so
-                you <em>can</em> scale when the time comes.&rdquo;
+                &ldquo;{archQuote}&rdquo;
               </p>
               <footer className="mt-4 font-sans text-sm text-[#7A7A9A]">
-                &mdash; Goodluck Prosper
+                &mdash; {archQuoteAuthor}
               </footer>
             </blockquote>
           </div>

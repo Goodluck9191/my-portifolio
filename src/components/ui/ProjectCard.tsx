@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
 
 interface ProjectCardProps {
   image: string;
@@ -31,12 +33,14 @@ export function ProjectCard({
 }: ProjectCardProps) {
   return (
     <div className="group rounded-xl border border-[#2A2A38] bg-[#0F0F1A] transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-lg hover:shadow-[#6C63FF]/10">
-      <div className="overflow-hidden rounded-t-xl">
+      <div className="relative aspect-video overflow-hidden rounded-t-xl">
         {image ? (
-          <img
+          <Image
             src={image}
             alt={title}
-            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <PlaceholderImage title={title} />
@@ -58,8 +62,9 @@ export function ProjectCard({
           {techStack.map((tech) => (
             <span
               key={tech}
-              className="rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A]"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A] transition-all duration-200 hover:border-[#6C63FF]"
             >
+              <TechStackIcon name={tech} size={12} />
               {tech}
             </span>
           ))}

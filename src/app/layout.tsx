@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Syne } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import SettingsWrapper from "@/components/providers/SettingsWrapper";
+import { getAllSettings } from "@/lib/data";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,11 +21,17 @@ const syne = Syne({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Goodluck Prosper — Full Stack Developer",
-  description:
-    "Full stack developer specializing in React, Next.js & Node.js. I build clean, fast websites that help businesses grow online.",
-};
+const defaultTitle = "Goodluck Prosper — Full Stack Developer";
+const defaultDescription =
+  "Full stack developer specializing in React, Next.js & Node.js. I build clean, fast websites that help businesses grow online.";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getAllSettings().catch(() => ({} as Record<string, string>));
+  return {
+    title: settings.site_title ?? defaultTitle,
+    description: settings.site_description ?? defaultDescription,
+  };
+}
 
 export default function RootLayout({
   children,
@@ -36,9 +44,11 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${syne.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <Navbar />
-        <main className="flex-1 pt-16">{children}</main>
-        <Footer />
+        <SettingsWrapper>
+          <Navbar />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
+        </SettingsWrapper>
       </body>
     </html>
   );
