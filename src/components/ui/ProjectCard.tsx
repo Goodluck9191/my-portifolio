@@ -48,15 +48,17 @@ export function ProjectCard({
       </div>
 
       <div className="flex flex-col gap-3 p-5">
-        <span className="font-mono text-xs font-medium text-[#6C63FF]">
+        <span className="w-fit rounded-full border border-[#6C63FF]/30 bg-[#6C63FF]/10 px-3 py-0.5 font-mono text-[11px] font-medium text-[#6C63FF]">
           {category}
         </span>
 
-        <h3 className="font-display text-lg font-semibold text-white">
+        <h3 className="font-display text-[20px] font-semibold leading-snug text-white line-clamp-2">
           {title}
         </h3>
 
-        <p className="truncate text-sm text-[#7A7A9A]">{description}</p>
+        <p className="font-sans text-sm leading-relaxed text-[#7A7A9A] line-clamp-3">
+          {description}
+        </p>
 
         <div className="flex flex-wrap gap-2">
           {techStack.map((tech) => (
@@ -70,12 +72,12 @@ export function ProjectCard({
           ))}
         </div>
 
-        <div className="mt-1 flex items-center gap-4">
+        <div className="mt-1 flex flex-wrap items-center gap-3 border-t border-[#2A2A38] pt-3">
           <Link
             href={caseStudyUrl}
             className="text-sm font-medium text-[#EEEEFF] transition-colors hover:text-[#6C63FF]"
           >
-            Case Study &rarr;
+            Case Study →
           </Link>
           {githubUrl && (
             <a
@@ -84,7 +86,7 @@ export function ProjectCard({
               rel="noopener noreferrer"
               className="text-sm text-[#7A7A9A] transition-colors hover:text-[#EEEEFF]"
             >
-              GitHub &nearr;
+              GitHub ↗
             </a>
           )}
           {demoUrl && (
@@ -94,7 +96,7 @@ export function ProjectCard({
               rel="noopener noreferrer"
               className="text-sm text-[#7A7A9A] transition-colors hover:text-[#EEEEFF]"
             >
-              Demo &nearr;
+              Demo ↗
             </a>
           )}
         </div>
