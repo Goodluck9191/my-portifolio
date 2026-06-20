@@ -1,11 +1,18 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { AnimatedCounter } from "@/components/ui/AnimatedCounter";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
 import { AboutPreview } from "@/components/sections/AboutPreview";
 import { FeaturedProjects } from "@/components/sections/FeaturedProjects";
 import { SystemDesignShowcase } from "@/components/sections/SystemDesignShowcase";
 import { BlogPreview } from "@/components/sections/BlogPreview";
 import { ContactCTA } from "@/components/sections/ContactCTA";
-import { getProjects, getPosts } from "@/lib/data";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
+import { getProjects, getPosts, getAllSettings } from "@/lib/data";
+
+export const revalidate = 3600;
+
+console.log("HOME RENDER");
 
 const techStack = [
   "React", "Next.js", "Node.js", "Express", "Python",
@@ -13,34 +20,88 @@ const techStack = [
   "Vercel", "Git", "REST APIs",
 ];
 
-export default async function Home() {
-  const [projects, posts] = await Promise.allSettled([
-    getProjects(),
-    getPosts(),
-  ]);
+async function FeaturedProjectsWrapper() {
+  const projects = await getProjects();
+  const featured = projects.filter((p) => p.featured);
+  return <FeaturedProjects projects={featured} />;
+}
 
-  const featuredProjects =
-    projects.status === "fulfilled" ? projects.value.filter((p) => p.featured) : [];
-  const featuredPosts =
-    posts.status === "fulfilled" ? posts.value.filter((p) => p.published) : [];
+async function BlogPreviewWrapper() {
+  const posts = await getPosts();
+  const published = posts.filter((p) => p.published).slice(0, 3);
+  return <BlogPreview posts={published} />;
+}
+
+function FeaturedProjectsSkeleton() {
+  return (
+    <section className="border-b border-[#22223A] bg-[#08080E] py-16 md:py-20">
+      <div className="mx-auto max-w-[1100px] px-4">
+        <div className="mb-[60px] flex flex-col items-center gap-2 text-center">
+          <h2 className="font-display text-3xl font-extrabold text-white md:text-4xl">
+            Selected Work
+          </h2>
+          <p className="font-sans text-base text-[#7A7A9A]">
+            Projects I&apos;m proud to have shipped.
+          </p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} variant="project" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlogPreviewSkeleton() {
+  return (
+    <section className="border-b border-[#22223A] bg-[#08080E] py-16 md:py-20">
+      <div className="mx-auto max-w-[1100px] px-4">
+        <div className="mb-[60px] flex flex-col items-center gap-2 text-center">
+          <h2 className="font-display text-3xl font-extrabold text-white md:text-4xl">
+            From the Blog
+          </h2>
+          <p className="font-sans text-base text-[#7A7A9A]">
+            Sharing what I&apos;ve learned.
+          </p>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} variant="blog" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default async function Home() {
+  const settings = await getAllSettings().catch(() => ({} as Record<string, string>));
+
+  const heroHeading = settings.hero_heading ?? "I Build Web Applications That";
+  const heroHeadingMuted = settings.hero_heading_muted ?? "Clients Are Proud Of.";
+  const heroSubtitle = settings.hero_subtitle ?? "Full stack developer specializing in React, Next.js & Node.js. I turn your ideas into fast, modern, professional websites.";
+  const availabilityText = settings.availability_text ?? "Available for Freelance & Full-Time";
+  const ctaPrimary = settings.hero_cta_primary_label ?? "See My Work";
+  const ctaSecondary = settings.hero_cta_secondary_label ?? "Let's Talk";
 
   return (
     <>
       <section className="mx-auto flex min-h-screen max-w-[1100px] flex-col justify-center px-4 pt-16">
         <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-green-500/20 bg-green-500/10 px-4 py-1.5 font-sans text-sm text-green-500">
           <span className="h-2 w-2 rounded-full bg-green-500" />
-          Available for Freelance &amp; Full-Time
+          {availabilityText}
         </div>
 
         <h1 className="font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
-          I Build Websites
+          {heroHeading}
           <br />
-          <span className="text-[#7A7A9A]">Clients Are Proud Of.</span>
+          <span className="text-[#7A7A9A]">{heroHeadingMuted}</span>
         </h1>
 
         <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-[#7A7A9A] sm:text-lg">
-          Full stack developer specializing in React, Next.js &amp; Node.js.
-          I turn your ideas into fast, modern, professional websites.
+          {heroSubtitle}
         </p>
 
         <div className="mt-8 flex flex-wrap gap-4">
@@ -48,13 +109,13 @@ export default async function Home() {
             href="/projects"
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] px-6 py-3 font-sans text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] hover:opacity-90"
           >
-            See My Work
+            {ctaPrimary}
           </Link>
           <Link
             href="/contact"
             className="inline-flex items-center gap-2 rounded-lg border border-[#22223A] bg-transparent px-6 py-3 font-sans text-sm font-semibold text-white transition-all duration-200 hover:border-[#6C63FF] hover:bg-[rgba(108,99,255,0.06)]"
           >
-            Let&apos;s Talk
+            {ctaSecondary}
           </Link>
         </div>
 
@@ -84,8 +145,8 @@ export default async function Home() {
         <div className="mx-auto max-w-[1100px] overflow-hidden">
           <div className="flex animate-[scroll_28s_linear_infinite] gap-12 whitespace-nowrap font-mono text-[13px] text-[#7A7A9A]">
             {[...techStack, ...techStack].map((tech, i) => (
-              <span key={i} className="inline-flex items-center gap-3">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#6C63FF]" />
+              <span key={i} className="inline-flex items-center gap-2">
+                <TechStackIcon name={tech} size={14} />
                 {tech}
               </span>
             ))}
@@ -94,9 +155,13 @@ export default async function Home() {
       </section>
 
       <AboutPreview />
-      <FeaturedProjects projects={featuredProjects} />
+      <Suspense fallback={<FeaturedProjectsSkeleton />}>
+        <FeaturedProjectsWrapper />
+      </Suspense>
       <SystemDesignShowcase />
-      <BlogPreview posts={featuredPosts} />
+      <Suspense fallback={<BlogPreviewSkeleton />}>
+        <BlogPreviewWrapper />
+      </Suspense>
       <ContactCTA />
     </>
   );

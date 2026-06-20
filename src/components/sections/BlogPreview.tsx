@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Post } from "@/lib/types";
 
@@ -54,11 +55,13 @@ function BlogCard({
       className="group flex flex-col overflow-hidden rounded-lg border border-[#22223A] bg-[#0F0F1A] transition-all duration-300 ease-out hover:border-[#6C63FF] hover:shadow-md"
     >
       {image ? (
-        <div className="overflow-hidden">
-          <img
+        <div className="relative aspect-video overflow-hidden">
+          <Image
             src={image}
             alt={title}
-            className="aspect-video w-full object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+            fill
+            className="object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>
       ) : (

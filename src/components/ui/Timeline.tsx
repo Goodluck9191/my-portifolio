@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
 
 interface TimelineEntry {
   year: string;
@@ -63,8 +64,9 @@ export function Timeline({ entries }: TimelineProps) {
                     {entry.tech.map((t) => (
                       <span
                         key={t}
-                        className="rounded-full border border-[#2A2A38] bg-[#16162A] px-2.5 py-0.5 font-mono text-[11px] text-[#7A7A9A]"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#2A2A38] bg-[#16162A] px-2.5 py-0.5 font-mono text-[11px] text-[#7A7A9A] transition-all duration-200 hover:border-[#6C63FF]"
                       >
+                        <TechStackIcon name={t} size={11} />
                         {t}
                       </span>
                     ))}

@@ -1,9 +1,10 @@
+import { cache } from "react";
 import type { Project, Post } from "@/lib/types";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 const db = () => getSupabaseAdmin();
 
-export async function getProjects(): Promise<Project[]> {
+export const getProjects = cache(async (): Promise<Project[]> => {
   try {
     const { data, error } = await db()
       .from("projects")
@@ -16,9 +17,9 @@ export async function getProjects(): Promise<Project[]> {
     console.error("Error fetching projects:", err);
     return [];
   }
-}
+});
 
-export async function getFeaturedProjects(): Promise<Project[]> {
+export const getFeaturedProjects = cache(async (): Promise<Project[]> => {
   try {
     const { data, error } = await db()
       .from("projects")
@@ -33,11 +34,9 @@ export async function getFeaturedProjects(): Promise<Project[]> {
     console.error("Error fetching featured projects:", err);
     return [];
   }
-}
+});
 
-export async function getProjectBySlug(
-  slug: string
-): Promise<Project | null> {
+export const getProjectBySlug = cache(async (slug: string): Promise<Project | null> => {
   try {
     const { data, error } = await db()
       .from("projects")
@@ -51,11 +50,9 @@ export async function getProjectBySlug(
     console.error("Error fetching project by slug:", err);
     return null;
   }
-}
+});
 
-export async function getProjectsByCategory(
-  category: string
-): Promise<Project[]> {
+export const getProjectsByCategory = cache(async (category: string): Promise<Project[]> => {
   try {
     const { data, error } = await db()
       .from("projects")
@@ -69,9 +66,9 @@ export async function getProjectsByCategory(
     console.error("Error fetching projects by category:", err);
     return [];
   }
-}
+});
 
-export async function getPosts(): Promise<Post[]> {
+export const getPosts = cache(async (): Promise<Post[]> => {
   try {
     const { data, error } = await db()
       .from("posts")
@@ -85,9 +82,9 @@ export async function getPosts(): Promise<Post[]> {
     console.error("Error fetching posts:", err);
     return [];
   }
-}
+});
 
-export async function getFeaturedPost(): Promise<Post | null> {
+export const getFeaturedPost = cache(async (): Promise<Post | null> => {
   try {
     const { data, error } = await db()
       .from("posts")
@@ -104,9 +101,9 @@ export async function getFeaturedPost(): Promise<Post | null> {
     console.error("Error fetching featured post:", err);
     return null;
   }
-}
+});
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<Post | null> => {
   try {
     const { data, error } = await db()
       .from("posts")
@@ -121,11 +118,9 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     console.error("Error fetching post by slug:", err);
     return null;
   }
-}
+});
 
-export async function getPostsByCategory(
-  category: string
-): Promise<Post[]> {
+export const getPostsByCategory = cache(async (category: string): Promise<Post[]> => {
   try {
     const { data, error } = await db()
       .from("posts")
@@ -140,17 +135,17 @@ export async function getPostsByCategory(
     console.error("Error fetching posts by category:", err);
     return [];
   }
-}
+});
 
-export async function incrementPostViews(slug: string): Promise<void> {
+export const incrementPostViews = cache(async (slug: string): Promise<void> => {
   try {
     await db().rpc("increment_post_views", { slug_param: slug });
   } catch (err) {
     console.error("Error incrementing post views:", err);
   }
-}
+});
 
-export async function getSetting(key: string): Promise<string | null> {
+export const getSetting = cache(async (key: string): Promise<string | null> => {
   try {
     const { data, error } = await db()
       .from("settings")
@@ -164,9 +159,9 @@ export async function getSetting(key: string): Promise<string | null> {
     console.error("Error fetching setting:", err);
     return null;
   }
-}
+});
 
-export async function getAllSettings(): Promise<Record<string, string>> {
+export const getAllSettings = cache(async (): Promise<Record<string, string>> => {
   try {
     const { data, error } = await db()
       .from("settings")
@@ -183,4 +178,4 @@ export async function getAllSettings(): Promise<Record<string, string>> {
     console.error("Error fetching all settings:", err);
     return {};
   }
-}
+});

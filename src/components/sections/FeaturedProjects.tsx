@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { TechStackIcon } from "@/components/ui/TechStackIcon";
 import type { Project } from "@/lib/types";
 
 const fallbackProjects = [
@@ -49,11 +51,13 @@ function ProjectCard({
       className="group flex flex-col gap-3 rounded-xl border border-[#22223A] bg-[#0F0F1A] p-5 transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-lg"
     >
       {image ? (
-        <div className="overflow-hidden rounded-lg">
-          <img
+        <div className="relative aspect-video overflow-hidden rounded-lg">
+          <Image
             src={image}
             alt={title}
-            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>
       ) : (
@@ -70,16 +74,17 @@ function ProjectCard({
       <p className="font-sans text-sm leading-relaxed text-[#7A7A9A]">
         {description}
       </p>
-      <div className="flex flex-wrap gap-2">
-        {techs.map((tech) => (
-          <span
-            key={tech}
-            className="rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A]"
-          >
-            {tech}
-          </span>
-        ))}
-      </div>
+        <div className="flex flex-wrap gap-2">
+          {techs.map((tech) => (
+            <span
+              key={tech}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#2A2A38] bg-[#1A1A2E] px-2.5 py-1 font-mono text-[11px] text-[#7A7A9A] transition-all duration-200 hover:border-[#6C63FF]"
+            >
+              <TechStackIcon name={tech} size={12} />
+              {tech}
+            </span>
+          ))}
+        </div>
       <span className="mt-1 font-sans text-[13px] font-semibold text-[#6C63FF] transition-colors group-hover:text-[#00D4FF]">
         Case Study &rarr;
       </span>

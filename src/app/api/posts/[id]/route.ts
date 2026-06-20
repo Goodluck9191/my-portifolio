@@ -28,7 +28,9 @@ export async function GET(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, {
+      headers: { "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600" },
+    });
   } catch (err) {
     console.error("GET /api/posts/[id] error:", err);
     return NextResponse.json(

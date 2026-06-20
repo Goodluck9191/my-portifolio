@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { useAdmin } from "../../layout";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { slugify } from "@/lib/utils";
 
 const emptyForm = {
   title: "",
@@ -31,6 +34,12 @@ export default function PostFormPage({
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  const autoReadTime = useMemo(() => {
+    const words = form.content.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 200));
+  }, [form.content]);
 
   useEffect(() => {
     if (isNew) return;
@@ -51,7 +60,7 @@ export default function PostFormPage({
           featured: data.featured ?? false,
           tags: (data.tags ?? []).join(", "),
         });
-      } catch (err) {
+      } catch {
         setError("Failed to load post");
       } finally {
         setLoading(false);
@@ -60,19 +69,27 @@ export default function PostFormPage({
     fetchPost();
   }, [id, isNew]);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) {
-    const target = e.target;
-    const name = target.name;
-    const value =
-      target instanceof HTMLInputElement && target.type === "checkbox"
-        ? target.checked
-        : target.type === "number"
-          ? Number(target.value)
-          : target.value;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const target = e.target;
+      const name = target.name;
+      const value =
+        target instanceof HTMLInputElement && target.type === "checkbox"
+          ? target.checked
+          : target.type === "number"
+            ? Number(target.value)
+            : target.value;
+
+      setForm((prev) => {
+        const next = { ...prev, [name]: value };
+        if (name === "title" && !slugManuallyEdited && isNew) {
+          next.slug = slugify(String(value));
+        }
+        return next;
+      });
+    },
+    [slugManuallyEdited, isNew]
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,6 +98,7 @@ export default function PostFormPage({
 
     const payload = {
       ...form,
+      read_time: autoReadTime,
       tags: form.tags
         .split(",")
         .map((t) => t.trim())
@@ -103,11 +121,14 @@ export default function PostFormPage({
       if (!res.ok) {
         const errData = await res.json();
         const details = errData.issues?.length
-          ? errData.issues.map((i: { path: (string | number)[]; message: string }) => `${i.path.join(".")}: ${i.message}`).join("; ")
+          ? errData.issues.map((i: { path: (string | number)[]; message: string }) =>
+              `${i.path.join(".")}: ${i.message}`
+            ).join("; ")
           : "";
         throw new Error(details ? `${errData.error}: ${details}` : errData.error ?? "Failed to save");
       }
 
+      toast.success(isNew ? "Post created" : "Post saved");
       router.push("/admin/posts");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -129,10 +150,21 @@ export default function PostFormPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-white">
           {isNew ? "New Post" : "Edit Post"}
         </h1>
+        {!isNew && form.slug && (
+          <a
+            href={`/blog/${form.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-lg border border-[#2A2A38] px-3 py-2 font-sans text-sm text-[#00D4FF] transition-colors hover:bg-[#00D4FF]/10"
+          >
+            <ExternalLink size={14} />
+            Preview
+          </a>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -143,7 +175,16 @@ export default function PostFormPage({
 
         <div className="flex flex-col gap-1.5">
           <label className="font-sans text-xs text-[#7A7A9A]">Slug *</label>
-          <input name="slug" value={form.slug} onChange={handleChange} className={inputClass} required />
+          <input
+            name="slug"
+            value={form.slug}
+            onChange={(e) => {
+              setSlugManuallyEdited(true);
+              handleChange(e);
+            }}
+            className={inputClass}
+            required
+          />
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -185,14 +226,19 @@ export default function PostFormPage({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="font-sans text-xs text-[#7A7A9A]">Read Time (minutes)</label>
-            <input
-              name="read_time"
-              type="number"
-              value={form.read_time}
-              onChange={handleChange}
-              className={inputClass}
-              min={1}
-            />
+            <div className="flex items-center gap-2">
+              <input
+                name="read_time"
+                type="number"
+                value={form.read_time}
+                onChange={handleChange}
+                className={inputClass}
+                min={1}
+              />
+              <span className="shrink-0 font-mono text-[11px] text-[#7A7A9A]">
+                Auto: {autoReadTime}m
+              </span>
+            </div>
           </div>
         </div>
 

@@ -7,6 +7,7 @@ const db = () => getSupabaseAdmin();
 
 export async function GET(request: Request) {
   try {
+    const isAdmin = await verifyAdmin(request).catch(() => false);
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const featured = searchParams.get("featured");
@@ -16,8 +17,12 @@ export async function GET(request: Request) {
     let query = db()
       .from("posts")
       .select("*", { count: "exact" })
-      .eq("published", true)
       .order("created_at", { ascending: false });
+
+    // Admins see all posts; public only sees published
+    if (!isAdmin) {
+      query = query.eq("published", true);
+    }
 
     if (category) {
       query = query.eq("category", category);
@@ -44,7 +49,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data, count });
+    const cacheControl = isAdmin
+      ? "private, no-cache"
+      : "public, max-age=60, s-maxage=300";
+
+    return NextResponse.json({ data, count }, {
+      headers: { "Cache-Control": cacheControl },
+    });
   } catch (err) {
     console.error("GET /api/posts error:", err);
     return NextResponse.json(

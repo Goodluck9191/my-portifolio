@@ -7,6 +7,7 @@ const db = () => getSupabaseAdmin();
 
 export async function GET(request: Request) {
   try {
+    const isAdmin = await verifyAdmin(request).catch(() => false);
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const featured = searchParams.get("featured");
@@ -30,7 +31,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data });
+    const cacheControl = isAdmin
+      ? "private, no-cache"
+      : "public, max-age=60, s-maxage=300";
+
+    return NextResponse.json({ data }, {
+      headers: { "Cache-Control": cacheControl },
+    });
   } catch (err) {
     console.error("GET /api/projects error:", err);
     return NextResponse.json(

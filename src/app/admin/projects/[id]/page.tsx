@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 import { useAdmin } from "../../layout";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import { slugify } from "@/lib/utils";
 
 const emptyForm = {
   title: "",
@@ -37,6 +40,7 @@ export default function ProjectFormPage({
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
     if (isNew) return;
@@ -63,7 +67,7 @@ export default function ProjectFormPage({
           role: data.role ?? "",
           results: data.results ?? "",
         });
-      } catch (err) {
+      } catch {
         setError("Failed to load project");
       } finally {
         setLoading(false);
@@ -72,17 +76,27 @@ export default function ProjectFormPage({
     fetchProject();
   }, [id, isNew]);
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) {
-    const target = e.target;
-    const name = target.name;
-    const value =
-      target instanceof HTMLInputElement && target.type === "checkbox"
-        ? target.checked
-        : target.value;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  }
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+      const target = e.target;
+      const name = target.name;
+      const value =
+        target instanceof HTMLInputElement && target.type === "checkbox"
+          ? target.checked
+          : target.type === "number"
+            ? Number(target.value)
+            : target.value;
+
+      setForm((prev) => {
+        const next = { ...prev, [name]: value };
+        if (name === "title" && !slugManuallyEdited && isNew) {
+          next.slug = slugify(String(value));
+        }
+        return next;
+      });
+    },
+    [slugManuallyEdited, isNew]
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -96,7 +110,6 @@ export default function ProjectFormPage({
         .map((t) => t.trim())
         .filter(Boolean),
     };
-    delete (payload as Record<string, unknown>).id;
 
     try {
       const res = await fetch(
@@ -119,6 +132,7 @@ export default function ProjectFormPage({
         throw new Error(details ? `${errData.error}: ${details}` : errData.error ?? "Failed to save");
       }
 
+      toast.success(isNew ? "Project created" : "Project saved");
       router.push("/admin/projects");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -140,10 +154,21 @@ export default function ProjectFormPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-white">
           {isNew ? "New Project" : "Edit Project"}
         </h1>
+        {!isNew && form.slug && (
+          <a
+            href={`/projects/${form.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-lg border border-[#2A2A38] px-3 py-2 font-sans text-sm text-[#00D4FF] transition-colors hover:bg-[#00D4FF]/10"
+          >
+            <ExternalLink size={14} />
+            Preview
+          </a>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -154,7 +179,16 @@ export default function ProjectFormPage({
 
         <div className="flex flex-col gap-1.5">
           <label className="font-sans text-xs text-[#7A7A9A]">Slug *</label>
-          <input name="slug" value={form.slug} onChange={handleChange} className={inputClass} required />
+          <input
+            name="slug"
+            value={form.slug}
+            onChange={(e) => {
+              setSlugManuallyEdited(true);
+              handleChange(e);
+            }}
+            className={inputClass}
+            required
+          />
         </div>
 
         <div className="flex flex-col gap-1.5">

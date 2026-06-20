@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 interface BlogCardProps {
@@ -36,12 +37,14 @@ export function BlogCard({
       href={linkHref}
       className="group block overflow-hidden rounded-lg border border-[#2A2A38] bg-[#0F0F1A] transition-all duration-300 ease-out hover:translate-y-[-4px] hover:border-[#6C63FF] hover:shadow-md hover:shadow-[#6C63FF]/10"
     >
-      <div className="overflow-hidden">
+      <div className="relative aspect-video overflow-hidden">
         {image ? (
-          <img
+          <Image
             src={image}
             alt={title}
-            className="aspect-video w-full object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+            fill
+            className="object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <PlaceholderImage title={title} />
