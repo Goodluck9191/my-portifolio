@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS posts (
   content text NOT NULL,
   category text NOT NULL,
   image_url text,
+  meta_description text,
   read_time integer NOT NULL DEFAULT 1,
   published boolean NOT NULL DEFAULT false,
   featured boolean NOT NULL DEFAULT false,
@@ -44,6 +45,9 @@ CREATE TABLE IF NOT EXISTS posts (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Migration: Add meta_description column for SEO support
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS meta_description text;
 
 CREATE TABLE IF NOT EXISTS contacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

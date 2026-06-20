@@ -160,7 +160,7 @@ export default function ArchitecturePage() {
       try {
         const res = await fetch("/api/posts");
         const data = await res.json();
-        setArticles((data.data ?? []).slice(0, 6));
+        setArticles((data.data ?? []).slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch articles:", err);
       } finally {
@@ -308,7 +308,7 @@ export default function ArchitecturePage() {
         <div className="flex flex-col gap-8">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-3xl font-bold text-white md:text-4xl">
-              Architecture Articles
+              Recent Articles
             </h2>
             <Link
               href="/blog"

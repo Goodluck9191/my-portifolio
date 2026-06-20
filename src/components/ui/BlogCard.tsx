@@ -43,6 +43,7 @@ export function BlogCard({
             src={image}
             alt={title}
             fill
+            unoptimized
             className="object-cover brightness-100 transition-all duration-300 group-hover:brightness-110"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />

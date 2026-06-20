@@ -47,6 +47,7 @@ export default async function ProjectPage({
               src={project.image_url}
               alt={project.title}
               fill
+              unoptimized
               className="object-cover"
               priority
               sizes="(max-width: 768px) 100vw, 768px"
