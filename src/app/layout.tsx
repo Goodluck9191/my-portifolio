@@ -30,6 +30,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: settings.site_title ?? defaultTitle,
     description: settings.site_description ?? defaultDescription,
+    metadataBase: new URL("https://goodluckprosper.vercel.app"),
+    alternates: {
+      canonical: "/",
+    },
+    other: {
+      ...(settings.google_verification_code
+        ? { "google-site-verification": settings.google_verification_code }
+        : {}),
+    },
   };
 }
 
