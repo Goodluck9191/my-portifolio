@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Syne } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import Analytics from "@/components/providers/Analytics";
+import JsonLd from "@/components/providers/JsonLd";
 import SettingsWrapper from "@/components/providers/SettingsWrapper";
 import { getAllSettings } from "@/lib/data";
 import "./globals.css";
@@ -35,6 +36,33 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: "/",
     },
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+      ],
+      shortcut: "/favicon.svg",
+      apple: "/apple-touch-icon.svg",
+    },
+    openGraph: {
+      title: settings.site_title ?? defaultTitle,
+      description: settings.site_description ?? defaultDescription,
+      url: "https://goodluckprosper.vercel.app",
+      siteName: "Goodluck Prosper",
+      images: [
+        {
+          url: "/logo.svg",
+          width: 512,
+          height: 512,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.site_title ?? defaultTitle,
+      description: settings.site_description ?? defaultDescription,
+      images: ["/logo.svg"],
+    },
     other: {
       ...(settings.google_verification_code
         ? { "google-site-verification": settings.google_verification_code }
@@ -55,6 +83,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <Analytics />
+        <JsonLd />
         <SettingsWrapper>
           <Navbar />
           <main className="flex-1 pt-16">{children}</main>
