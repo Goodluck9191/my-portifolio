@@ -140,9 +140,6 @@ export default function ContactPage() {
                       <span className="font-sans text-xs text-[#7A7A9A]">
                         {label}
                       </span>
-                      <span className="font-sans text-sm text-[#EEEEFF]">
-                        {value}
-                      </span>
                     </div>
                   </a>
                 ))}
