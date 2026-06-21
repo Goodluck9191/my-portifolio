@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Syne } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import Analytics from "@/components/providers/Analytics";
 import SettingsWrapper from "@/components/providers/SettingsWrapper";
 import { getAllSettings } from "@/lib/data";
 import "./globals.css";
@@ -53,6 +54,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${syne.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <Analytics />
         <SettingsWrapper>
           <Navbar />
           <main className="flex-1 pt-16">{children}</main>
