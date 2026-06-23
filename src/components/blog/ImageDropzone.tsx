@@ -15,7 +15,8 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const [preview, setPreview] = useState<{ url: string; name: string } | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [altText, setAltText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -30,25 +31,37 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
     return null;
   }
 
-  async function uploadFile(file: File) {
+  function handleFile(file: File) {
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
     const name = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-    setPreview({ url: objectUrl, name });
+    setPreviewUrl(URL.createObjectURL(file));
+    setPendingFile(file);
     setAltText(name);
     setError("");
+  }
+
+  async function confirmUpload() {
+    if (!pendingFile) return;
 
     setUploading(true);
     setProgress(0);
+    setError("");
 
     try {
+      const token = sessionStorage.getItem("admin_token");
+      if (!token) {
+        setError("Authentication required. Please re-login.");
+        setUploading(false);
+        return;
+      }
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", pendingFile);
       formData.append("folder", "blog");
 
       const xhr = new XMLHttpRequest();
@@ -73,13 +86,14 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
         });
         xhr.addEventListener("error", () => reject(new Error("Network error")));
         xhr.open("POST", "/api/upload");
-        xhr.withCredentials = true;
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
         xhr.send(formData);
       });
 
-      const alt = altText || name;
+      const alt = altText || pendingFile.name.replace(/\.[^/.]+$/, "");
       onUpload(result.url, alt);
-      setPreview(null);
+      setPendingFile(null);
+      setPreviewUrl(null);
       setAltText("");
       setProgress(0);
     } catch (err: unknown) {
@@ -93,38 +107,32 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) uploadFile(file);
-  }, [altText]);
+    if (file) handleFile(file);
+  }, []);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) uploadFile(file);
+    if (file) handleFile(file);
     e.target.value = "";
   }
 
   function cancelPreview() {
-    setPreview(null);
+    setPendingFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
     setAltText("");
     setError("");
   }
 
-  function confirmPreview() {
-    if (preview) {
-      onUpload(preview.url, altText || preview.name);
-      setPreview(null);
-      setAltText("");
-    }
-  }
-
-  if (preview) {
+  if (previewUrl) {
     return (
       <div className="rounded-lg border border-[#22223A] bg-[#0F0F1A] p-4">
         <div className="flex items-start gap-4">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-[#16162A]">
-            <img src={preview.url} alt="Preview" className="h-full w-full object-cover" />
+            <img src={previewUrl} alt="Preview" className="h-full w-full object-cover" />
           </div>
           <div className="flex-1 space-y-2">
-            <p className="font-sans text-xs text-[#7A7A9A]">{preview.name}</p>
+            <p className="font-sans text-xs text-[#7A7A9A]">{pendingFile?.name}</p>
             {uploading ? (
               <div className="space-y-1">
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#22223A]">
@@ -146,7 +154,7 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={confirmPreview}
+                    onClick={confirmUpload}
                     className="rounded bg-[#6C63FF] px-3 py-1 font-sans text-xs text-white hover:bg-[#5A52E0]"
                   >
                     Insert
@@ -180,19 +188,10 @@ export default function ImageDropzone({ onUpload }: ImageDropzoneProps) {
           : "border-[#22223A] bg-[#16162A] hover:border-[#6C63FF]"
       }`}
     >
-      {uploading ? (
-        <>
-          <Loader2 size={16} className="animate-spin text-[#6C63FF]" />
-          <span className="font-sans text-sm text-[#7A7A9A]">Uploading... {progress}%</span>
-        </>
-      ) : (
-        <>
-          <FileImage size={16} className="text-[#7A7A9A]" />
-          <span className="font-sans text-sm text-[#7A7A9A]">
-            {dragOver ? "Drop image here" : "Drag & drop or click to upload"}
-          </span>
-        </>
-      )}
+      <FileImage size={16} className="text-[#7A7A9A]" />
+      <span className="font-sans text-sm text-[#7A7A9A]">
+        {dragOver ? "Drop image here" : "Drag & drop or click to upload"}
+      </span>
       <input
         ref={inputRef}
         type="file"

@@ -229,22 +229,18 @@ export default async function BlogPostPage({
                       </a>
                     );
                   },
-                  img: ({ src, alt, ...props }) => (
-                    <figure className="my-8">
+                  img: ({ src, alt, ...props }) => {
+                    if (!src) return null;
+                    return (
                       <img
                         src={src}
                         alt={alt ?? ""}
                         loading="lazy"
-                        className="w-full rounded-lg border border-[#22223A] object-cover"
+                        className="my-8 w-full rounded-lg border border-[#22223A] object-cover"
                         {...props}
                       />
-                      {alt && (
-                        <figcaption className="mt-2 text-center font-sans text-sm text-[#7A7A9A]">
-                          {alt}
-                        </figcaption>
-                      )}
-                    </figure>
-                  ),
+                    );
+                  },
                   code: CodeBlock,
                   p: ({ children }) => (
                     <p className="my-5 font-sans text-base leading-[1.8] text-[#EEEEFF]">
