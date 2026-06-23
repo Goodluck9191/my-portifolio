@@ -49,6 +49,15 @@ CREATE TABLE IF NOT EXISTS posts (
 -- Migration: Add meta_description column for SEO support
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS meta_description text;
 
+-- Migration: Add advanced SEO columns
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS meta_title text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS canonical_url text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS focus_keyword text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS og_title text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS og_description text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS og_image text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS twitter_image text;
+
 CREATE TABLE IF NOT EXISTS contacts (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,

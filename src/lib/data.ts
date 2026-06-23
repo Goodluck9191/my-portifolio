@@ -145,6 +145,72 @@ export const incrementPostViews = cache(async (slug: string): Promise<void> => {
   }
 });
 
+export const searchPosts = cache(async (query: string): Promise<Post[]> => {
+  try {
+    const { data, error } = await db()
+      .from("posts")
+      .select("*")
+      .eq("published", true)
+      .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%,content.ilike.%${query}%,category.ilike.%${query}%`)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+    return data ?? [];
+  } catch (err) {
+    console.error("Error searching posts:", err);
+    return [];
+  }
+});
+
+export const getAllTags = cache(async (): Promise<string[]> => {
+  try {
+    const { data, error } = await db()
+      .from("posts")
+      .select("tags")
+      .eq("published", true);
+
+    if (error) throw error;
+    const allTags = [...new Set((data ?? []).flatMap((p) => p.tags).filter(Boolean))];
+    return allTags.sort();
+  } catch (err) {
+    console.error("Error fetching tags:", err);
+    return [];
+  }
+});
+
+export const getRelatedPosts = cache(async (
+  slug: string,
+  tags: string[],
+  category: string,
+  limit = 3
+): Promise<Post[]> => {
+  try {
+    const { data, error } = await db()
+      .from("posts")
+      .select("*")
+      .eq("published", true)
+      .neq("slug", slug)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    const posts = data ?? [];
+    if (posts.length === 0) return [];
+
+    const scored = posts.map((p) => {
+      const sharedTags = p.tags.filter((t: string) => tags.includes(t)).length;
+      const sameCategory = p.category === category ? 1 : 0;
+      return { post: p, score: sharedTags * 2 + sameCategory };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, limit).map((s) => s.post);
+  } catch (err) {
+    console.error("Error fetching related posts:", err);
+    return [];
+  }
+});
+
 export const getSetting = cache(async (key: string): Promise<string | null> => {
   try {
     const { data, error } = await db()

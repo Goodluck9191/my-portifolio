@@ -30,5 +30,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...blogPages, ...projectPages];
+  const categories = [...new Set(posts.map((p) => p.category))].filter(Boolean);
+  const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
+    url: `${baseUrl}/blog/category/${encodeURIComponent(cat.toLowerCase().replace(/\s+/g, "-"))}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.6,
+  }));
+
+  const allTags = [...new Set(posts.flatMap((p) => p.tags))].filter(Boolean);
+  const tagPages: MetadataRoute.Sitemap = allTags.map((tag) => ({
+    url: `${baseUrl}/blog/tag/${encodeURIComponent(tag.toLowerCase())}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
+
+  return [...staticPages, ...blogPages, ...projectPages, ...categoryPages, ...tagPages];
 }

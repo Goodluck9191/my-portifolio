@@ -52,10 +52,17 @@ export const postSchema = z.object({
   category: z.string().min(2),
   image_url: z.string().url().optional().or(z.literal("")),
   meta_description: z.string().min(50).max(160).optional().or(z.literal("")),
+  meta_title: z.string().max(70).optional().or(z.literal("")),
+  canonical_url: z.string().url().optional().or(z.literal("")),
+  focus_keyword: z.string().max(100).optional().or(z.literal("")),
+  og_title: z.string().max(70).optional().or(z.literal("")),
+  og_description: z.string().max(200).optional().or(z.literal("")),
+  og_image: z.string().url().optional().or(z.literal("")),
+  twitter_image: z.string().url().optional().or(z.literal("")),
   read_time: z.number().min(1).max(60),
   published: z.boolean().default(false),
   featured: z.boolean().default(false),
-  tags: z.array(z.string()).default([]),
+  tags: z.array(z.string().min(1).trim()).default([]),
 });
 
 export type ContactFormData = z.infer<typeof contactSchema>;

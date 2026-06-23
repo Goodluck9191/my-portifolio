@@ -14,11 +14,11 @@ export async function GET(request: Request) {
     const featured = searchParams.get("featured");
     const limit = searchParams.get("limit");
     const offset = searchParams.get("offset");
+    const sort = searchParams.get("sort");
 
     let query = db()
       .from("posts")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false });
+      .select("*", { count: "exact" });
 
     // Admins see all posts; public only sees published
     if (!isAdmin) {
@@ -31,6 +31,12 @@ export async function GET(request: Request) {
 
     if (featured === "true") {
       query = query.eq("featured", true);
+    }
+
+    if (sort === "views") {
+      query = query.order("views", { ascending: false });
+    } else {
+      query = query.order("created_at", { ascending: false });
     }
 
     if (limit) {

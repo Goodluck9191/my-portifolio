@@ -30,6 +30,13 @@ export type Post = {
   category: string;
   image_url?: string;
   meta_description?: string;
+  meta_title?: string;
+  canonical_url?: string;
+  focus_keyword?: string;
+  og_title?: string;
+  og_description?: string;
+  og_image?: string;
+  twitter_image?: string;
   read_time: number;
   published: boolean;
   featured: boolean;
