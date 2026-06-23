@@ -6,6 +6,8 @@ import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useAdmin } from "../../layout";
 import { ImageUpload } from "@/components/ui/ImageUpload";
+import MarkdownEditor from "@/components/blog/MarkdownEditor";
+import TagSelector from "@/components/blog/TagSelector";
 import { slugify } from "@/lib/utils";
 
 const emptyForm = {
@@ -16,10 +18,17 @@ const emptyForm = {
   category: "",
   image_url: "",
   meta_description: "",
+  meta_title: "",
+  canonical_url: "",
+  focus_keyword: "",
+  og_title: "",
+  og_description: "",
+  og_image: "",
+  twitter_image: "",
   read_time: 5,
   published: false,
   featured: false,
-  tags: "",
+  tags: [] as string[],
 };
 
 export default function PostFormPage({
@@ -36,6 +45,7 @@ export default function PostFormPage({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
 
   const autoReadTime = useMemo(() => {
     const words = form.content.trim().split(/\s+/).filter(Boolean).length;
@@ -57,10 +67,17 @@ export default function PostFormPage({
           category: data.category ?? "",
           image_url: data.image_url ?? "",
           meta_description: data.meta_description ?? "",
+          meta_title: data.meta_title ?? "",
+          canonical_url: data.canonical_url ?? "",
+          focus_keyword: data.focus_keyword ?? "",
+          og_title: data.og_title ?? "",
+          og_description: data.og_description ?? "",
+          og_image: data.og_image ?? "",
+          twitter_image: data.twitter_image ?? "",
           read_time: data.read_time ?? 5,
           published: data.published ?? false,
           featured: data.featured ?? false,
-          tags: (data.tags ?? []).join(", "),
+          tags: data.tags ?? [],
         });
       } catch {
         setError("Failed to load post");
@@ -70,6 +87,19 @@ export default function PostFormPage({
     }
     fetchPost();
   }, [id, isNew]);
+
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        const res = await fetch("/api/tags");
+        if (res.ok) {
+          const { data } = await res.json();
+          setExistingTags(data ?? []);
+        }
+      } catch { /* ignore */ }
+    }
+    fetchTags();
+  }, []);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -101,10 +131,6 @@ export default function PostFormPage({
     const payload = {
       ...form,
       read_time: autoReadTime,
-      tags: form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
     };
 
     try {
@@ -246,24 +272,61 @@ export default function PostFormPage({
           )}
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-xs text-[#7A7A9A]">Content *</label>
-          <textarea
-            name="content"
-            value={form.content}
-            onChange={handleChange}
-            className={`${inputClass} resize-none`}
-            rows={12}
-            required
-          />
-        </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="font-sans text-xs text-[#7A7A9A]">Content *</label>
+            <MarkdownEditor
+              value={form.content}
+              onChange={(val) => setForm((prev) => ({ ...prev, content: val }))}
+            />
+          </div>
 
-        <ImageUpload
-          value={form.image_url}
-          onChange={(url) => setForm((prev) => ({ ...prev, image_url: url }))}
-          label="Cover Image"
-        />
-        <input name="image_url" value={form.image_url} onChange={handleChange} className="hidden" />
+          <ImageUpload
+            value={form.image_url}
+            onChange={(url) => setForm((prev) => ({ ...prev, image_url: url }))}
+            label="Cover Image"
+          />
+          <input name="image_url" value={form.image_url} onChange={handleChange} className="hidden" />
+
+          <details className="rounded-lg border border-[#22223A] bg-[#0F0F1A]">
+            <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 font-sans text-sm font-medium text-[#EEEEFF]">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Advanced SEO
+            </summary>
+            <div className="border-t border-[#22223A] p-4 space-y-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="font-sans text-xs text-[#7A7A9A]">Meta Title (max 70 chars)</label>
+                <input name="meta_title" value={form.meta_title} onChange={handleChange} className={inputClass} placeholder="Leave empty to use post title" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-sans text-xs text-[#7A7A9A]">Canonical URL</label>
+                <input name="canonical_url" value={form.canonical_url} onChange={handleChange} className={inputClass} placeholder="https://example.com/original-post" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-sans text-xs text-[#7A7A9A]">Focus Keyword</label>
+                <input name="focus_keyword" value={form.focus_keyword} onChange={handleChange} className={inputClass} placeholder="e.g. system design tutorial" />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-xs text-[#7A7A9A]">OG Title</label>
+                  <input name="og_title" value={form.og_title} onChange={handleChange} className={inputClass} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-xs text-[#7A7A9A]">OG Description</label>
+                  <input name="og_description" value={form.og_description} onChange={handleChange} className={inputClass} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-xs text-[#7A7A9A]">OG Image</label>
+                  <input name="og_image" value={form.og_image} onChange={handleChange} className={inputClass} placeholder="/logo.svg" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-xs text-[#7A7A9A]">Twitter Image</label>
+                  <input name="twitter_image" value={form.twitter_image} onChange={handleChange} className={inputClass} placeholder="/logo.svg" />
+                </div>
+              </div>
+            </div>
+          </details>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
@@ -285,15 +348,11 @@ export default function PostFormPage({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="font-sans text-xs text-[#7A7A9A]">
-            Tags (comma-separated)
-          </label>
-          <input
-            name="tags"
+          <label className="font-sans text-xs text-[#7A7A9A]">Tags</label>
+          <TagSelector
             value={form.tags}
-            onChange={handleChange}
-            className={inputClass}
-            placeholder="TypeScript, React, Architecture"
+            onChange={(tags) => setForm((prev) => ({ ...prev, tags }))}
+            suggestions={existingTags}
           />
         </div>
 

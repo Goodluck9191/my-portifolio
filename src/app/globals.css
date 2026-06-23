@@ -58,3 +58,106 @@ body {
     transform: translateX(100%);
   }
 }
+
+/* Blog content typography */
+.blog-content {
+  max-width: 780px;
+}
+
+.blog-content p {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #EEEEFF;
+}
+
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #22223A;
+}
+
+.blog-content pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #22223A;
+  background: #0F0F1A !important;
+  padding: 1rem !important;
+  margin: 1.5rem 0;
+}
+
+.blog-content pre code {
+  background: none !important;
+  padding: 0 !important;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.blog-content code {
+  background: #16162A;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  color: #00D4FF;
+}
+
+.blog-content a {
+  color: #6C63FF;
+  text-decoration: underline;
+  text-decoration-color: rgba(108, 99, 255, 0.3);
+  transition: text-decoration-color 0.2s;
+}
+
+.blog-content a:hover {
+  text-decoration-color: #6C63FF;
+}
+
+.blog-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.blog-content th,
+.blog-content td {
+  border: 1px solid #22223A;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+.blog-content th {
+  background: #0F0F1A;
+  color: #EEEEFF;
+  font-weight: 600;
+}
+
+.blog-content td {
+  color: #C0C0D0;
+}
+
+/* highlight.js dark theme overrides */
+.hljs {
+  background: transparent !important;
+  color: #EEEEFF !important;
+}
+
+.hljs-keyword { color: #6C63FF !important; }
+.hljs-string { color: #00D4FF !important; }
+.hljs-comment { color: #7A7A9A !important; }
+.hljs-function { color: #FF6B6B !important; }
+.hljs-number { color: #FFD93D !important; }
+.hljs-title { color: #6C63FF !important; }
+.hljs-built_in { color: #00D4FF !important; }
+.hljs-type { color: #FF6B6B !important; }
+.hljs-attr { color: #6C63FF !important; }
+.hljs-attribute { color: #00D4FF !important; }
+.hljs-literal { color: #FFD93D !important; }
+.hljs-meta { color: #7A7A9A !important; }
+.hljs-tag { color: #6C63FF !important; }
+.hljs-name { color: #6C63FF !important; }
+.hljs-selector-class { color: #00D4FF !important; }

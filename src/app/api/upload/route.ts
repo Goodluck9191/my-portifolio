@@ -13,6 +13,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const folder = (formData.get("folder") as string) ?? "";
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -41,8 +42,18 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "")}`;
-    const filePath = `uploads/${fileName}`;
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "");
+    const fileName = `${Date.now()}-${sanitizedName}`;
+
+    let filePath: string;
+    if (folder === "blog") {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      filePath = `blog-images/${year}/${month}/${fileName}`;
+    } else {
+      filePath = `uploads/${fileName}`;
+    }
 
     const { data, error } = await db()
       .storage
