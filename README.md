@@ -10,7 +10,7 @@ A modern, responsive portfolio and personal blog built to showcase my software e
 
 ![Portfolio Preview](Screenshots/Screenshot_20260808-151154~3.jpg)
 
-More screenshots are available in the [`screenshots/`](screenshots/) directory.
+More screenshots are available in the [`screenshots/`](Screenshots/) directory.
 
 ---
 
