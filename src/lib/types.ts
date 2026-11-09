@@ -72,6 +72,48 @@ export type Subscriber = {
   created_at: string;
 };
 
+export type BlogLike = {
+  id: string;
+  post_id: string;
+  visitor_id: string;
+  created_at: string;
+};
+
+export type BlogComment = {
+  id: string;
+  post_id: string;
+  parent_id: string | null;
+  name: string;
+  email: string;
+  content: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  updated_at: string;
+};
+
+export type CommentFormData = {
+  name: string;
+  email: string;
+  content: string;
+  parent_id?: string | null;
+};
+
+export type BlogEngagementStats = {
+  post_id: string;
+  post_title: string;
+  post_slug: string;
+  like_count: number;
+  approved_comment_count: number;
+  pending_comment_count: number;
+};
+
+export type BlogEngagementTotals = {
+  total_likes: number;
+  total_approved_comments: number;
+  total_pending_comments: number;
+  total_rejected_comments: number;
+};
+
 export type ApiResponse<T> = {
   data?: T;
   error?: string;

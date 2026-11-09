@@ -10,6 +10,7 @@ import {
   Plus,
   Mail,
   ArrowRight,
+  Heart,
 } from "lucide-react";
 import { useAdmin } from "./layout";
 import type { Project, Post, Contact } from "@/lib/types";
@@ -30,6 +31,12 @@ export default function AdminDashboard() {
     posts: 0,
     unreadContacts: 0,
   });
+  const [engagement, setEngagement] = useState({
+    totalLikes: 0,
+    totalApprovedComments: 0,
+    mostLiked: [] as { title: string; slug: string; like_count: number }[],
+    mostCommented: [] as { title: string; slug: string; approved_comment_count: number }[],
+  });
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,11 +44,13 @@ export default function AdminDashboard() {
     async function fetchStats() {
       try {
         const headers = { Authorization: `Bearer ${token}` };
-        const [projectsRes, postsRes, contactsRes] = await Promise.all([
-          fetch("/api/projects", { headers }),
-          fetch("/api/posts", { headers }),
-          fetch("/api/contact", { headers }),
-        ]);
+        const [projectsRes, postsRes, contactsRes, engagementRes] =
+          await Promise.all([
+            fetch("/api/projects", { headers }),
+            fetch("/api/posts", { headers }),
+            fetch("/api/contact", { headers }),
+            fetch("/api/admin/engagement", { headers }),
+          ]);
 
         const projects: { data: Project[] } = await projectsRes.json();
         const posts: { data: Post[] } = await postsRes.json();
@@ -56,6 +65,17 @@ export default function AdminDashboard() {
           posts: postsData.length,
           unreadContacts: contactsData.filter((c) => c.status === "unread").length,
         });
+
+        if (engagementRes.ok) {
+          const engagementData = await engagementRes.json();
+          const totals = engagementData.data?.totals ?? {};
+          setEngagement({
+            totalLikes: totals.total_likes ?? 0,
+            totalApprovedComments: totals.total_approved_comments ?? 0,
+            mostLiked: engagementData.data?.most_liked ?? [],
+            mostCommented: engagementData.data?.most_commented ?? [],
+          });
+        }
 
         // Build combined recent activity feed (last 5 items across all types)
         const activity: ActivityItem[] = [
@@ -181,6 +201,111 @@ export default function AdminDashboard() {
           </Link>
         ))}
       </div>
+
+      <div className="rounded-lg border border-[#2A2A38] bg-[#0F0F1A] p-5">
+        <h2 className="mb-4 font-display text-base font-bold text-white">
+          Blog Engagement
+        </h2>
+        <p className="font-sans text-sm text-[#7A7A9A] mb-4">
+          Overview of reader engagement across your articles.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              icon: Heart,
+              label: "Total Likes",
+              value: engagement.totalLikes,
+              color: "from-red-500/20 to-pink-500/20",
+              textColor: "text-red-400",
+            },
+            {
+              icon: MessageSquare,
+              label: "Total Comments",
+              value: engagement.totalApprovedComments,
+              color: "from-green-500/20 to-emerald-500/20",
+              textColor: "text-green-400",
+            },
+          ].map(({ icon: Icon, label, value, color, textColor }) => (
+            <div
+              key={label}
+              className="group rounded-lg border border-[#2A2A38] bg-[#0F0F1A] p-4 transition-all duration-200 hover:border-[#6C63FF]"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${color}`}
+                >
+                  <Icon size={18} className={textColor} />
+                </div>
+                <div>
+                  <p className="font-display text-2xl font-bold text-white">
+                    {value}
+                  </p>
+                  <p className="font-sans text-xs text-[#7A7A9A]">{label}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {engagement.mostLiked.length > 0 || engagement.mostCommented.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-[#2A2A38] bg-[#0F0F1A] p-5">
+            <h3 className="mb-3 font-display text-sm font-semibold text-[#7A7A9A] uppercase tracking-wider">
+              Most-Liked Posts
+            </h3>
+            <div className="flex flex-col gap-2">
+              {engagement.mostLiked.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/admin/posts`}
+                  className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#1A1A2E]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-sans text-sm font-medium text-[#EEEEFF] truncate">
+                      {post.title}
+                    </p>
+                    <p className="font-mono text-[11px] text-[#7A7A9A]">
+                      {post.like_count} like{post.like_count !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+              {engagement.mostLiked.length === 0 && (
+                <p className="font-sans text-xs text-[#7A7A9A]">No likes yet.</p>
+              )}
+            </div>
+          </div>
+          <div className="rounded-lg border border-[#2A2A38] bg-[#0F0F1A] p-5">
+            <h3 className="mb-3 font-display text-sm font-semibold text-[#7A7A9A] uppercase tracking-wider">
+              Most-Commented Posts
+            </h3>
+            <div className="flex flex-col gap-2">
+              {engagement.mostCommented.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/admin/posts`}
+                  className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#1A1A2E]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-sans text-sm font-medium text-[#EEEEFF] truncate">
+                      {post.title}
+                    </p>
+                    <p className="font-mono text-[11px] text-[#7A7A9A]">
+                      {post.approved_comment_count} comment{
+                        post.approved_comment_count !== 1 ? "s" : ""
+                      }
+                    </p>
+                  </div>
+                </Link>
+              ))}
+              {engagement.mostCommented.length === 0 && (
+                <p className="font-sans text-xs text-[#7A7A9A]">No comments yet.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="rounded-lg border border-[#2A2A38] bg-[#0F0F1A] p-5">
         <h2 className="mb-4 font-display text-base font-bold text-white">
