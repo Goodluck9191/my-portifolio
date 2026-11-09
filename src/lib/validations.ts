@@ -65,6 +65,24 @@ export const postSchema = z.object({
   tags: z.array(z.string().min(1).trim()).default([]),
 });
 
+export const commentSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, "Name must be at least 2 characters")
+    .max(100, "Name too long"),
+  email: z.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .max(255, "Email too long"),
+  content: z.string()
+    .trim()
+    .min(5, "Comment must be at least 5 characters")
+    .max(2000, "Comment too long"),
+  parent_id: z.string().uuid().optional().nullable(),
+});
+
+export type CommentFormData = z.infer<typeof commentSchema>;
+
 export type ContactFormData = z.infer<typeof contactSchema>;
 export type ProjectFormData = z.infer<typeof projectSchema>;
 export type PostFormData = z.infer<typeof postSchema>;

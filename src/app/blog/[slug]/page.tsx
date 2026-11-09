@@ -15,6 +15,8 @@ import ShareButtons from "@/components/blog/ShareButtons";
 import ReadingProgress from "@/components/blog/ReadingProgress";
 import BackToTop from "@/components/blog/BackToTop";
 import ViewTracker from "./ViewTracker";
+import EngagementBar from "@/components/blog/EngagementBar";
+import CommentSection from "@/components/blog/CommentSection";
 
 export const revalidate = 3600;
 
@@ -188,6 +190,12 @@ export default async function BlogPostPage({
               <ShareButtons title={post.title} slug={post.slug} />
             </div>
 
+            <EngagementBar
+              postId={post.id}
+              postSlug={post.slug}
+              postTitle={post.title}
+            />
+
             {post.image_url && (
               <div className="relative mb-10 aspect-video overflow-hidden rounded-xl border border-[#2A2A38]">
                 <Image
@@ -308,6 +316,11 @@ export default async function BlogPostPage({
 
             <AuthorCard />
             <RelatedArticles posts={relatedPosts} />
+
+            <section className="mt-16 lg:mt-20">
+              <CommentSection postId={post.id} />
+            </section>
+
           </article>
 
           {headings.length > 0 && (

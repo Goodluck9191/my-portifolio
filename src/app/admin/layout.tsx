@@ -14,6 +14,7 @@ import {
   X,
   Settings,
   Image,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface AdminContextType {
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/projects", label: "Projects", icon: FolderKanban },
   { href: "/admin/posts", label: "Posts", icon: FileText },
+  { href: "/admin/comments", label: "Comments", icon: SlidersHorizontal },
   { href: "/admin/contacts", label: "Contacts", icon: MessageSquare },
   { href: "/admin/media", label: "Media", icon: Image },
   { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -43,6 +45,7 @@ const breadcrumbLabels: Record<string, string> = {
   admin: "Admin",
   projects: "Projects",
   posts: "Posts",
+  comments: "Comments",
   contacts: "Contacts",
   media: "Media",
   settings: "Settings",
