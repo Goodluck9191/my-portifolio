@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import Analytics from "@/components/providers/Analytics";
 import JsonLd from "@/components/providers/JsonLd";
 import SettingsWrapper from "@/components/providers/SettingsWrapper";
+import ChatWidget from "@/components/chatbot/ChatWidget";
 import { getAllSettings } from "@/lib/data";
 import "./globals.css";
 
@@ -89,6 +90,7 @@ export default function RootLayout({
           <main className="flex-1 pt-16">{children}</main>
           <Footer />
         </SettingsWrapper>
+        <ChatWidget />
       </body>
     </html>
   );

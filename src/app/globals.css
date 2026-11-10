@@ -39,6 +39,26 @@ body {
   }
 }
 
+/* AI Assistant floating button — rotating outer ring */
+@keyframes assistant-ring-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.assistant-ring {
+  animation: assistant-ring-rotate 18s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-ring {
+    animation: none;
+  }
+}
+
 @keyframes slide-up {
   from {
     opacity: 1;
